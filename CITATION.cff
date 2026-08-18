@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "Se este projeto contribuir para seu trabalho, cite-o usando estes metadados."
+title: "OBW LAS AI Audit: pipeline local e rastreável para auditoria de arquivos LAS"
+type: software
+authors:
+  - alias: "ISSUNYY"
+repository-code: "https://github.com/ISSUNYY/obw-las-ai-audit"
+license: MIT
+version: 0.1.0
+date-released: 2026-08-18
+keywords:
+  - LAS
+  - well logs
+  - data quality
+  - local AI
+  - explainability
+  - electrofacies
+
