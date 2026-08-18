@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "obw-las-ai-audit"
 version = "0.1.0"
-description = "Pipeline local e rastreável para conversão e auditoria de arquivos LAS."
+description = "Conversão e controle de qualidade de arquivos LAS para perfis de poço."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-authors = [{ name = "ISSUNYY" }]
-keywords = ["las", "well-logs", "data-quality", "local-ai"]
+authors = [{ name = "Davi Farias Dias" }]
+keywords = ["las", "well-logs", "data-quality", "petroleum-engineering"]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "License :: OSI Approved :: MIT License",
@@ -32,4 +32,3 @@ testpaths = ["tests"]
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-

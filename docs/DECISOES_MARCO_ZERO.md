@@ -42,3 +42,9 @@ gráfica dependem da aprovação dos portões do protocolo.
 Tokens e chaves serão fornecidos apenas por mecanismos locais de autenticação ou
 variáveis de ambiente. Credenciais nunca serão gravadas em arquivos versionados.
 
+## D-009 — Voz acadêmica centrada no problema
+
+A documentação apresentará primeiro o problema relacionado aos dados de perfis de
+poço. Inteligência artificial será descrita como ferramenta de apoio, sem linguagem
+promocional ou protagonismo maior do que sua função no trabalho. Todo texto público
+será avaliado pela MEPA definida em `docs/GUIA_DE_ESCRITA.md`.

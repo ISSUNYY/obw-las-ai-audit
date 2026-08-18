@@ -34,3 +34,16 @@
 - Validar modelos por poço ou bloco de profundidade, nunca por linhas aleatórias.
 - Preservar nomes, unidades e valores originais em todas as transformações.
 
+## Escrita do projeto
+
+- Seguir obrigatoriamente `docs/GUIA_DE_ESCRITA.md` em README, documentação, issues,
+  relatórios, mensagens de commit e textos de interface.
+- Avaliar textos novos ou alterados pela Métrica de Escrita do Projeto Acadêmico
+  (MEPA) antes de publicar.
+- Exigir no mínimo 11 de 14 pontos e nenhum critério com nota zero.
+- Apresentar primeiro o problema de Engenharia de Petróleo; ferramentas de IA devem
+  aparecer como apoio e na proporção necessária.
+- Evitar slogans, linguagem de marketing, excesso de termos em inglês e sequências
+  de adjetivos técnicos.
+- Não imitar erros de digitação de mensagens informais. Preservar a voz direta e
+  didática do autor com revisão ortográfica adequada ao contexto acadêmico.
