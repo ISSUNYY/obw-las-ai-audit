@@ -1,0 +1,14 @@
+#!/bin/sh
+
+python_bin="$(git config --get obw.python 2>/dev/null || true)"
+if [ -z "$python_bin" ]; then
+    python_bin="${PYTHON:-python}"
+fi
+
+required="$(git config --bool --get obw.geminiRequired 2>/dev/null || true)"
+gemini_option=""
+if [ "$required" = "true" ]; then
+    gemini_option="--require-gemini"
+fi
+
+PYTHONUTF8=1 PYTHONPATH=src "$python_bin" -m obw.project_guard $gemini_option
