@@ -56,8 +56,9 @@ $env:PYTHONPATH = "src"
 python -m obw.project_guard --watch --require-luna
 ```
 
-No Windows, o projeto pode registrar esse comando para iniciar no acesso do usuário.
-O monitor não examina pastas privadas e não faz chamadas quando elas são alteradas.
+Na inicialização automática do Windows, o monitor deve usar `pythonw.exe` para
+funcionar em segundo plano sem abrir um terminal. Ele não examina pastas privadas e
+não faz chamadas quando elas são alteradas.
 
 ## Execução manual
 
