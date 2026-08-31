@@ -1,7 +1,6 @@
 # Dados e referências privadas ou de terceiros
 Documentos de Referêcia/
 2016-MSC-FERNANDO VIZEU SANTOS.pdf
-ESCOPO_PROJETO_TCC.txt
 *.las
 *.LAS
 data/raw/
@@ -45,4 +44,3 @@ build/
 .vscode/
 .DS_Store
 Thumbs.db
-
