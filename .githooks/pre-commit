@@ -11,4 +11,4 @@ if [ "$required" = "true" ]; then
     luna_option="--require-luna"
 fi
 
-PYTHONUTF8=1 PYTHONPATH=src "$python_bin" -m obw.project_guard $luna_option
+PYTHONUTF8=1 "$python_bin" scripts/luna.py $luna_option

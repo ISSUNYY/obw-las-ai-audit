@@ -11,6 +11,7 @@
 ## Organização
 
 - Código novo fica em `src/obw/`.
+- Pontos de entrada curtos ficam em `scripts/`; a lógica permanece em `src/obw/`.
 - Testes ficam em `tests/`.
 - Contratos versionados ficam em `schemas/`.
 - Documentação acadêmica pública fica em `docs/`.
