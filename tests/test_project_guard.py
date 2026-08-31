@@ -1,8 +1,18 @@
-"""Testes do controle de formatação e privacidade do projeto."""
+"""Testes do controle de organização, formatação e privacidade do projeto."""
 
+import json
+import tempfile
 import unittest
+from pathlib import Path
+from typing import Self
+from unittest.mock import patch
 
-from obw.project_guard import check_text, is_forbidden_path, validate_gemini_result
+from obw.project_guard import (
+    call_luna,
+    check_text,
+    is_forbidden_path,
+    validate_luna_result,
+)
 
 
 class ProjectGuardTests(unittest.TestCase):
@@ -10,6 +20,9 @@ class ProjectGuardTests(unittest.TestCase):
         self.assertTrue(is_forbidden_path("Documentos de Referêcia/data/example.las"))
         self.assertTrue(is_forbidden_path("outputs/report.json"))
         self.assertTrue(is_forbidden_path("paper.pdf"))
+        self.assertTrue(is_forbidden_path(".env"))
+        self.assertTrue(is_forbidden_path("config/.env.local"))
+        self.assertTrue(is_forbidden_path("private-key.pem"))
         self.assertTrue(is_forbidden_path("tests/fixtures/paper.pdf"))
         self.assertFalse(is_forbidden_path("outputs/.gitkeep"))
         self.assertFalse(is_forbidden_path("tests/fixtures/synthetic.las"))
@@ -25,11 +38,21 @@ class ProjectGuardTests(unittest.TestCase):
         content = b"# Titulo\n\nTexto curto.\n"
         self.assertEqual(check_text("docs/exemplo.md", content), [])
 
-    def test_rejects_gemini_path_that_was_not_sent(self) -> None:
-        result = {
+    def review_result(self) -> dict[str, object]:
+        """Cria um parecer mínimo válido da Luna."""
+
+        return {
             "approved": True,
             "mepa_score": 12,
             "zero_criteria": [],
+            "issues": [],
+            "file_recommendations": [],
+            "summary": "Aprovado.",
+        }
+
+    def test_rejects_luna_path_that_was_not_sent(self) -> None:
+        result = {
+            **self.review_result(),
             "issues": [
                 {
                     "path": "private.txt",
@@ -39,20 +62,76 @@ class ProjectGuardTests(unittest.TestCase):
                     "suggestion": "Revisar.",
                 }
             ],
-            "summary": "Aprovado.",
         }
-        errors = validate_gemini_result(result, {"README.md"})
+        errors = validate_luna_result(result, {"README.md"})
         self.assertTrue(any("caminho não enviado" in error for error in errors))
 
-    def test_accepts_well_formed_gemini_result(self) -> None:
-        result = {
-            "approved": True,
-            "mepa_score": 12,
-            "zero_criteria": [],
-            "issues": [],
-            "summary": "Aprovado.",
+    def test_rejects_removal_without_two_evidences(self) -> None:
+        result = self.review_result()
+        result["file_recommendations"] = [
+            {
+                "path": "tests/test_old.py",
+                "action": "revisar_remocao",
+                "category": "teste_obsoleto",
+                "confidence": "alta",
+                "evidence": ["Não há importações."],
+                "explanation": "Pode estar obsoleto.",
+                "target": "",
+            }
+        ]
+        errors = validate_luna_result(result, {"tests/test_old.py"})
+        self.assertTrue(any("duas evidências" in error for error in errors))
+
+    def test_accepts_well_formed_luna_result(self) -> None:
+        self.assertEqual(validate_luna_result(self.review_result(), {"README.md"}), [])
+
+    def test_luna_request_disables_storage_and_uses_structured_output(self) -> None:
+        response_payload = {
+            "output": [
+                {
+                    "type": "message",
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": json.dumps(self.review_result()),
+                        }
+                    ],
+                }
+            ]
         }
-        self.assertEqual(validate_gemini_result(result, {"README.md"}), [])
+
+        class Response:
+            def __enter__(self) -> Self:
+                return self
+
+            def __exit__(self, *args: object) -> None:
+                return None
+
+            def read(self) -> bytes:
+                return json.dumps(response_payload).encode("utf-8")
+
+        captured: dict[str, object] = {}
+
+        def fake_urlopen(http_request: object, timeout: float) -> Response:
+            captured["request"] = http_request
+            captured["timeout"] = timeout
+            return Response()
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "docs").mkdir()
+            (root / "docs" / "GUIA_DE_ESCRITA.md").write_text(
+                "# Guia\n\nTexto.\n", encoding="utf-8"
+            )
+            with patch("obw.project_guard.request.urlopen", fake_urlopen):
+                result = call_luna(root, {"README.md": "# Projeto\n"}, "segredo")
+
+        sent = json.loads(captured["request"].data.decode("utf-8"))
+        self.assertFalse(sent["store"])
+        self.assertEqual(sent["model"], "gpt-5.6-luna")
+        self.assertEqual(sent["text"]["format"]["type"], "json_schema")
+        self.assertNotIn("segredo", sent)
+        self.assertEqual(result, self.review_result())
 
 
 if __name__ == "__main__":
