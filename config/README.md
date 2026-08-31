@@ -52,8 +52,7 @@ agrupadas por dois segundos para evitar chamadas repetidas enquanto o arquivo ai
 está sendo salvo.
 
 ```powershell
-$env:PYTHONPATH = "src"
-python -m obw.project_guard --watch --require-luna
+python scripts/luna.py --watch --require-luna
 ```
 
 Na inicialização automática do Windows, o monitor deve usar `pythonw.exe` para
@@ -65,8 +64,7 @@ não faz chamadas quando elas são alteradas.
 Para verificar todos os arquivos versionados e produzir uma auditoria completa:
 
 ```powershell
-$env:PYTHONPATH = "src"
-python -m obw.project_guard --all --require-luna
+python scripts/luna.py --all --require-luna
 ```
 
 Para conferir apenas os arquivos preparados para o próximo commit, retire `--all`.

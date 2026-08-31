@@ -66,6 +66,7 @@ especificamente para o projeto.
 
 ```text
 src/obw/             código-fonte
+scripts/luna.py      entrada do fiscal da Luna
 tests/               testes automatizados do fiscal já implementados
 tests/fixtures/      dados sintéticos versionáveis
 schemas/             contratos JSON versionados
