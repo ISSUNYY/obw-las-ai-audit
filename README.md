@@ -66,7 +66,7 @@ especificamente para o projeto.
 
 ```text
 src/obw/             código-fonte
-tests/               verificações automatizadas já implementadas
+tests/               testes automatizados do fiscal já implementados
 tests/fixtures/      dados sintéticos versionáveis
 schemas/             contratos JSON versionados
 config/              configurações públicas e não sensíveis
@@ -75,8 +75,8 @@ outputs/             resultados locais não versionados
 tmp/                 arquivos temporários descartáveis
 ```
 
-Testes integrados e adversariais serão acrescentados quando as etapas que eles
-avaliam forem implementadas.
+Os testes do conversor, incluindo equivalência e casos adversariais, serão
+acrescentados quando essas etapas forem implementadas.
 
 ## Documentação do projeto
 
