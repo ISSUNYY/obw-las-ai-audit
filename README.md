@@ -1,51 +1,57 @@
-# OBW LAS AI Audit
+# Conversão e controle de qualidade de arquivos LAS
 
-Pipeline local, rastreável e assistido por inteligência artificial para conversão,
-normalização e auditoria de qualidade de arquivos LAS.
+Projeto de TCC de **Davi Farias Dias**, estudante de Engenharia de Exploração e
+Produção de Petróleo na Universidade Estadual do Norte Fluminense Darcy Ribeiro
+(UENF).
 
-> Status: **Marco Zero** — governança, contrato de dados e protocolo de pesquisa.
+> Situação atual: **Marco Zero** — definição do problema, organização dos dados e
+> planejamento dos critérios de avaliação.
 
-## Objetivo
+## Contexto
 
-O projeto investiga se arquivos LAS podem ser convertidos para uma representação
-JSON confiável e auditados por uma IA local sem aceitar afirmações que não estejam
-sustentadas por evidências calculadas.
+Arquivos LAS são usados para armazenar perfis de poço e informações importantes
+sobre a aquisição. Embora sejam arquivos de texto, sua leitura exige alguns cuidados.
+Um mesmo poço pode apresentar curvas repetidas, intervalos sem dados, unidades
+diferentes e mais de uma corrida de perfilagem.
 
-O princípio da arquitetura é:
+Este projeto busca organizar essa leitura e verificar a qualidade dos dados antes de
+qualquer interpretação. A primeira entrega será um programa capaz de converter LAS
+para JSON sem perder a relação entre profundidades, curvas, unidades e valores nulos.
 
-> O programa calcula. A IA explica. O verificador confere.
+Um modelo de linguagem executado localmente será avaliado em uma etapa posterior.
+Sua função será ajudar na redação do diagnóstico, usando somente resultados já
+calculados pelo programa. Ele não será usado para corrigir dados nem para tomar uma
+decisão geológica sozinho.
 
-O modelo de linguagem não será responsável por alterar dados, preencher valores
-ausentes ou classificar litologias no piloto inicial.
+## Pergunta do trabalho
 
-## Escopo do piloto
+É possível automatizar a conversão e a análise inicial de qualidade de arquivos LAS,
+mantendo os resultados verificáveis e reduzindo o risco de conclusões sem apoio nos
+dados?
 
-- leitura determinística de LAS 2.0, incluindo `WRAP=YES` e `WRAP=NO`;
-- preservação dos metadados, curvas, unidades e valores originais;
-- conversão versionada para JSON;
-- normalização de curvas por regra explícita e intervalo;
-- controle de qualidade calculado por código;
-- geração de um pacote compacto de evidências;
-- auditoria explicativa com modelo local via Ollama;
-- validação automática das evidências citadas pela IA;
-- medição de respostas inválidas, omissões e afirmações não sustentadas.
+## O que será feito no piloto
 
-Classificação de eletrofácies, continuidade vertical e física de rochas são linhas
-de evolução posteriores ao piloto.
+- leitura de arquivos LAS 2.0 com e sem quebra de linha por profundidade;
+- preservação dos cabeçalhos, nomes de curvas, unidades e valores originais;
+- conversão para um formato JSON documentado;
+- identificação de curvas repetidas e de seus intervalos válidos;
+- cálculo de cobertura, lacunas e inconsistências;
+- elaboração de arquivos sintéticos para testar situações conhecidas;
+- avaliação de um modelo local na produção de um diagnóstico escrito;
+- conferência automática dos números e das curvas mencionados pelo modelo.
 
-## Arquitetura prevista
+O piloto não tem como objetivo classificar todas as fácies. Essa possibilidade será
+estudada somente depois da validação da leitura e da qualidade dos dados.
 
-```text
-LAS imutável
-    -> parser e validação
-    -> normalização por intervalo
-    -> JSON canônico
-    -> controle de qualidade determinístico
-    -> pacote de evidências
-    -> IA local
-    -> verificador de afirmações
-    -> relatório aceito ou rejeitado
-```
+## Etapas previstas
+
+1. Definir o formato JSON e os critérios de aceitação.
+2. Criar arquivos LAS sintéticos para os testes.
+3. Implementar e conferir a conversão.
+4. Definir as regras de controle de qualidade.
+5. Produzir um resumo dos resultados para análise local.
+6. Avaliar o modelo de linguagem e medir respostas sem sustentação.
+7. Decidir, com base nos resultados, se o trabalho pode avançar para eletrofácies.
 
 ## Dados
 
@@ -69,13 +75,16 @@ outputs/             resultados locais não versionados
 tmp/                 arquivos temporários descartáveis
 ```
 
-## Protocolo de pesquisa
+## Documentação do projeto
 
 A pergunta de pesquisa, hipóteses, métricas e portões de decisão estão descritos em
 [docs/PROTOCOLO_PESQUISA.md](docs/PROTOCOLO_PESQUISA.md).
 
 As decisões do Marco Zero estão registradas em
 [docs/DECISOES_MARCO_ZERO.md](docs/DECISOES_MARCO_ZERO.md).
+
+O padrão de escrita adotado no repositório está em
+[docs/GUIA_DE_ESCRITA.md](docs/GUIA_DE_ESCRITA.md).
 
 ## Referência metodológica principal
 
@@ -86,9 +95,9 @@ Ribeiro, Macaé, 2016.
 
 ## Reprodutibilidade
 
-O projeto registrará versões do esquema, parser, regras de qualidade, prompt e
-modelo local. Entradas privadas serão identificadas internamente por hash SHA-256,
-sem publicar nomes, coordenadas ou conteúdo dos arquivos.
+O projeto registrará as versões do formato JSON, do programa, das regras de
+qualidade e do modelo avaliado. Entradas privadas serão identificadas internamente
+por hash SHA-256, sem publicar nomes, coordenadas ou conteúdo dos arquivos.
 
 ## Como citar
 
@@ -98,4 +107,3 @@ Os metadados de citação estão disponíveis em [CITATION.cff](CITATION.cff).
 
 O código original deste repositório é disponibilizado sob a licença MIT. Dados,
 documentos e materiais de terceiros não são cobertos por essa licença.
-
