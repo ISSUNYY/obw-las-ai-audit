@@ -5,10 +5,10 @@ if [ -z "$python_bin" ]; then
     python_bin="${PYTHON:-python}"
 fi
 
-required="$(git config --bool --get obw.geminiRequired 2>/dev/null || true)"
-gemini_option=""
+required="$(git config --bool --get obw.lunaRequired 2>/dev/null || true)"
+luna_option=""
 if [ "$required" = "true" ]; then
-    gemini_option="--require-gemini"
+    luna_option="--require-luna"
 fi
 
-PYTHONUTF8=1 PYTHONPATH=src "$python_bin" -m obw.project_guard $gemini_option
+PYTHONUTF8=1 PYTHONPATH=src "$python_bin" -m obw.project_guard $luna_option

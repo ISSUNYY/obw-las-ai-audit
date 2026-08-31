@@ -1,67 +1,75 @@
 # Verificação do projeto
 
-O repositório executa uma verificação antes de cada commit. O gancho confere os
-arquivos preparados no Git e bloqueia:
+O fiscal ajuda a manter o repositório concentrado no estudo dos dados de perfis de
+poço. Ele combina regras locais, que são sempre executadas, com uma leitura
+consultiva da Luna. Nenhuma recomendação da IA remove ou altera arquivos.
 
-- material privado ou de referência;
-- texto fora de UTF-8;
-- espaços no fim das linhas;
-- linhas acima de 100 caracteres;
-- arquivos sem quebra de linha final;
-- Markdown sem título principal ou sem espaço após títulos;
-- títulos Markdown repetidos;
-- sintaxe inválida em Python, JSON ou TOML.
+As regras locais bloqueiam material privado, erros de sintaxe e problemas básicos
+de formatação. A Luna avalia a escrita pela Métrica de Escrita do Projeto Acadêmico
+(MEPA) e procura indícios de:
 
-Quando um documento público é alterado, o programa também pode solicitar ao Gemini
-uma revisão de coerência e da Métrica de Escrita do Projeto Acadêmico (MEPA). Somente
-documentos públicos versionados podem ser enviados. LAS, PDFs, referências, saídas,
-coordenadas e arquivos ignorados são recusados antes da chamada externa.
+- documentação que repete outro arquivo;
+- testes que não correspondem mais ao comportamento do programa;
+- scripts sem função identificável no fluxo atual;
+- configurações sem uso e arquivos possivelmente duplicados.
 
-## Ativação local
+Uma sugestão de remoção precisa apresentar pelo menos duas evidências. Mesmo assim,
+ela permanece apenas como recomendação para revisão humana. O parecer mais recente
+fica em `outputs/project_guard/luna-latest.json`, pasta que não é versionada.
 
-O repositório usa o gancho versionado em `.githooks/pre-commit`. Para ativá-lo:
+## Proteção dos dados
+
+Somente arquivos públicos de texto, aceitos pelo Git, participam da revisão externa.
+LAS reais, PDFs, documentos de referência, coordenadas, saídas e arquivos ignorados
+não são enviados. As solicitações usam `store: false`, para que a resposta não seja
+armazenada pela API para recuperação posterior.
+
+## Chave e modelo
+
+A chave deve permanecer nas variáveis do usuário, nunca em um arquivo do projeto. O
+fiscal procura primeiro `OPENAI_API_KEY` e também aceita o nome `open_api` por
+compatibilidade. O modelo padrão é `gpt-5.6-luna`.
+
+Para trocar o modelo ou reduzir o limite padrão de 120.000 caracteres, podem ser
+usadas as variáveis `OBW_OPENAI_MODEL` e `OBW_OPENAI_MAX_CHARS`.
+
+## Verificação antes do commit
+
+O repositório usa o gancho versionado em `.githooks/pre-commit`. A ativação local é:
 
 ```powershell
 git config core.hooksPath .githooks
+git config obw.lunaRequired true
 ```
 
-A chave deve ser armazenada na variável de ambiente `GEMINI_API_KEY`, nunca em um
-arquivo do projeto. No Windows, ela pode ser criada em **Variáveis de Ambiente >
-Variáveis do usuário**. É necessário abrir um novo terminal depois da alteração.
+Quando a segunda opção está ativa, a indisponibilidade da API impede o commit. Isso
+evita que uma falha silenciosa seja confundida com uma revisão aprovada.
 
-O modelo padrão é `gemini-3.5-flash-lite`. Outro modelo pode ser escolhido com a
-variável `OBW_GEMINI_MODEL`.
+## Acompanhamento durante a edição
 
-Para controlar custo e evitar o envio acidental de documentos muito grandes, uma
-revisão aceita no máximo 60.000 caracteres por padrão. O limite pode ser reduzido com
-`OBW_GEMINI_MAX_CHARS`.
-
-Por padrão, a indisponibilidade da API produz um aviso, mas não impede o commit se a
-verificação determinística tiver sido aprovada. Para exigir a revisão Gemini:
-
-```powershell
-git config obw.geminiRequired true
-```
-
-Essa opção deve ser ativada somente depois que a chave tiver sido configurada. Para
-voltar ao modo tolerante a indisponibilidade externa:
-
-```powershell
-git config obw.geminiRequired false
-```
-
-## Execução manual
-
-Para verificar todos os arquivos versionados:
+O modo abaixo observa apenas textos públicos do projeto. Alterações próximas são
+agrupadas por dois segundos para evitar chamadas repetidas enquanto o arquivo ainda
+está sendo salvo.
 
 ```powershell
 $env:PYTHONPATH = "src"
-python -m obw.project_guard --all
+python -m obw.project_guard --watch --require-luna
 ```
 
-Para conferir apenas os arquivos preparados para o próximo commit, execute o comando
-sem `--all`.
+No Windows, o projeto pode registrar esse comando para iniciar no acesso do usuário.
+O monitor não examina pastas privadas e não faz chamadas quando elas são alteradas.
 
-As formas atuais de autenticação e resposta estruturada podem ser conferidas na
-[documentação de chaves](https://ai.google.dev/gemini-api/docs/api-key) e na
-[documentação de saída JSON](https://ai.google.dev/gemini-api/docs/structured-output).
+## Execução manual
+
+Para verificar todos os arquivos versionados e produzir uma auditoria completa:
+
+```powershell
+$env:PYTHONPATH = "src"
+python -m obw.project_guard --all --require-luna
+```
+
+Para conferir apenas os arquivos preparados para o próximo commit, retire `--all`.
+O uso da Responses API, da saída estruturada e do parâmetro de armazenamento segue a
+[documentação oficial da OpenAI][responses].
+
+[responses]: https://developers.openai.com/api/reference/resources/responses/methods/create
