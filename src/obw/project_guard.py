@@ -141,6 +141,7 @@ def run_git(arguments: list[str], *, cwd: Path) -> bytes:
         cwd=cwd,
         check=False,
         capture_output=True,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
     if process.returncode != 0:
         message = process.stderr.decode("utf-8", errors="replace").strip()

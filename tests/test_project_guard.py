@@ -1,21 +1,31 @@
 """Testes do controle de organização, formatação e privacidade do projeto."""
 
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Self
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from obw.project_guard import (
     call_luna,
     check_text,
     is_forbidden_path,
+    run_git,
     validate_luna_result,
 )
 
 
 class ProjectGuardTests(unittest.TestCase):
+    def test_git_commands_do_not_open_a_window(self) -> None:
+        completed = Mock(returncode=0, stdout=b"", stderr=b"")
+        with patch("obw.project_guard.subprocess.run", return_value=completed) as mocked:
+            run_git(["status"], cwd=Path.cwd())
+
+        expected = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        self.assertEqual(mocked.call_args.kwargs["creationflags"], expected)
+
     def test_rejects_private_and_reference_paths(self) -> None:
         self.assertTrue(is_forbidden_path("Documentos de Referêcia/data/example.las"))
         self.assertTrue(is_forbidden_path("outputs/report.json"))
