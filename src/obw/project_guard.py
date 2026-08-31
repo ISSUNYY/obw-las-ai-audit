@@ -316,7 +316,11 @@ def deterministic_review(
     return errors
 
 
-def build_review_prompt(root: Path, documents: dict[str, str]) -> str:
+def build_review_prompt(
+    root: Path,
+    documents: dict[str, str],
+    inventory_paths: list[str] | None = None,
+) -> str:
     """Monta uma auditoria em que o conteúdo dos arquivos é dado não confiável."""
 
     guide_path = root / "docs" / "GUIA_DE_ESCRITA.md"
@@ -325,7 +329,8 @@ def build_review_prompt(root: Path, documents: dict[str, str]) -> str:
     for path, content in documents.items():
         sections.append(f"\n<documento caminho={json.dumps(path)}>\n{content}\n</documento>")
 
-    inventory = "\n".join(f"- {path}" for path in sorted(documents))
+    inventory_paths = list(documents) if inventory_paths is None else inventory_paths
+    inventory = "\n".join(f"- {path}" for path in sorted(inventory_paths))
     return (
         "Você atua somente como auditor consultivo de um repositório acadêmico "
         "sobre perfis de poço. Avalie a escrita pela MEPA e procure arquivos que "
@@ -339,6 +344,10 @@ def build_review_prompt(root: Path, documents: dict[str, str]) -> str:
         "encontradas nos arquivos. Não invente resultados, dependências ou usos. "
         "Cite apenas caminhos presentes no inventário. Questões de escrita podem "
         "bloquear somente quando houver regra objetiva e passagem concreta. "
+        "Caminhos descritos como saídas locais podem estar ausentes porque não são "
+        "versionados; essa ausência, sozinha, não constitui problema. "
+        "Não corrija a grafia de caminhos literais sem comprovar uma divergência "
+        "com outro caminho apresentado no inventário. "
         "Aprove a escrita apenas com MEPA mínima de 11/14 e nenhum critério zero.\n\n"
         "<inventario_publico>\n"
         f"{inventory}\n"
@@ -466,13 +475,19 @@ def validate_luna_result(result: Any, allowed_paths: set[str]) -> list[str]:
     return errors
 
 
-def call_luna(root: Path, documents: dict[str, str], api_key: str) -> dict[str, Any]:
+def call_luna(
+    root: Path,
+    documents: dict[str, str],
+    api_key: str,
+    *,
+    inventory_paths: list[str] | None = None,
+) -> dict[str, Any]:
     """Solicita uma revisão estruturada sem enviar materiais privados."""
 
     model = os.getenv("OBW_OPENAI_MODEL", "gpt-5.6-luna")
     timeout = float(os.getenv("OBW_OPENAI_TIMEOUT", "90"))
     endpoint = "https://api.openai.com/v1/responses"
-    prompt = build_review_prompt(root, documents)
+    prompt = build_review_prompt(root, documents, inventory_paths)
     payload = {
         "model": model,
         "store": False,
@@ -517,7 +532,8 @@ def call_luna(root: Path, documents: dict[str, str], api_key: str) -> dict[str, 
     except json.JSONDecodeError as exc:
         raise RuntimeError("A Luna não retornou JSON válido.") from exc
 
-    validation_errors = validate_luna_result(result, set(documents))
+    allowed_paths = set(documents if inventory_paths is None else inventory_paths)
+    validation_errors = validate_luna_result(result, allowed_paths)
     if validation_errors:
         raise RuntimeError(" ".join(validation_errors))
     return result
@@ -627,7 +643,12 @@ def execute_review(root: Path, *, require_luna: bool) -> bool:
         print(message, file=sys.stderr if require_luna else sys.stdout)
         return not require_luna
     try:
-        result = call_luna(root, documents, api_key)
+        result = call_luna(
+            root,
+            documents,
+            api_key,
+            inventory_paths=public_working_paths(root),
+        )
     except (OSError, RuntimeError, ValueError) as exc:
         print(
             f"Revisão da Luna indisponível: {exc}",

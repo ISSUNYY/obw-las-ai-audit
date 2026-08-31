@@ -66,7 +66,7 @@ especificamente para o projeto.
 
 ```text
 src/obw/             código-fonte
-tests/               testes unitários, integrados e adversariais
+tests/               verificações automatizadas já implementadas
 tests/fixtures/      dados sintéticos versionáveis
 schemas/             contratos JSON versionados
 config/              configurações públicas e não sensíveis
@@ -74,6 +74,9 @@ docs/                protocolo, decisões e documentação acadêmica
 outputs/             resultados locais não versionados
 tmp/                 arquivos temporários descartáveis
 ```
+
+Testes integrados e adversariais serão acrescentados quando as etapas que eles
+avaliam forem implementadas.
 
 ## Documentação do projeto
 
