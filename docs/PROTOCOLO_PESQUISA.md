@@ -23,6 +23,11 @@ A análise dos materiais locais mostrou que o catálogo JSON legado e os program
 `main*.py` ajudam a reconstruir como os dados foram selecionados na dissertação. Eles
 serão tratados como referências históricas, não como código do novo sistema.
 
+As evidências dessa reconstrução permanecem nos materiais locais de referência, que
+não podem ser publicados nem enviados à revisão externa. Antes da versão científica,
+cada afirmação derivada desses materiais deverá ser confirmada por uma citação pública
+da dissertação ou apresentada explicitamente como hipótese de reprodução.
+
 A próxima entrega é a definição do contrato conceitual dos dados e de um caso
 sintético mínimo. Nenhuma etapa de classificação ou uso de modelo de linguagem deve
 começar antes da validação da conversão.

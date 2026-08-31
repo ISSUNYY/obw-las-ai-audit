@@ -17,6 +17,11 @@ Uma sugestão de remoção precisa apresentar pelo menos duas evidências. Mesmo
 ela permanece apenas como recomendação para revisão humana. O parecer mais recente
 fica em `outputs/project_guard/luna-latest.json`, pasta que não é versionada.
 
+Antes da chamada externa, o fiscal calcula um mapa local de relações. Esse mapa
+informa quais módulos são importados, quais scripts são citados por ganchos ou pela
+documentação e quais testes seguem a convenção do projeto. Assim, a ausência de uma
+referência isolada não é tratada como prova de que um arquivo perdeu sua função.
+
 ## Proteção dos dados
 
 Somente arquivos públicos de texto, aceitos pelo Git, participam da revisão externa.

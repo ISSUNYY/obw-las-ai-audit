@@ -317,6 +317,49 @@ def deterministic_review(
     return errors
 
 
+def build_reference_context(
+    documents: dict[str, str], inventory_paths: list[str]
+) -> str:
+    """Calcula relações verificáveis para reduzir conclusões por ausência."""
+
+    lines: list[str] = []
+    for target in sorted(inventory_paths):
+        normalized = target.replace("\\", "/")
+        aliases = {normalized.casefold()}
+        target_path = PurePosixPath(normalized)
+        if normalized.startswith("src/") and target_path.suffix.casefold() == ".py":
+            module_parts = list(target_path.with_suffix("").parts[1:])
+            if module_parts and module_parts[-1] == "__init__":
+                module_parts.pop()
+            if module_parts:
+                aliases.add(".".join(module_parts).casefold())
+
+        referenced_by = sorted(
+            source
+            for source, content in documents.items()
+            if source != target
+            and any(alias in content.casefold() for alias in aliases)
+        )
+        role = ""
+        if normalized.startswith("src/"):
+            role = "módulo de código-fonte"
+        elif normalized.startswith("scripts/"):
+            role = "ponto de entrada operacional"
+        elif normalized.startswith("tests/test_"):
+            role = "teste descoberto pela convenção do projeto"
+        elif normalized.startswith(".githooks/"):
+            role = "gancho executado pelo Git"
+
+        details = []
+        if role:
+            details.append(f"função estrutural: {role}")
+        if referenced_by:
+            details.append(f"referenciado por: {', '.join(referenced_by)}")
+        if details:
+            lines.append(f"- {target}: {'; '.join(details)}")
+    return "\n".join(lines) or "- nenhuma relação calculada"
+
+
 def build_review_prompt(
     root: Path,
     documents: dict[str, str],
@@ -332,6 +375,7 @@ def build_review_prompt(
 
     inventory_paths = list(documents) if inventory_paths is None else inventory_paths
     inventory = "\n".join(f"- {path}" for path in sorted(inventory_paths))
+    reference_context = build_reference_context(documents, inventory_paths)
     return (
         "Você atua somente como auditor consultivo de um repositório acadêmico "
         "sobre perfis de poço. Avalie a escrita pela MEPA e procure arquivos que "
@@ -349,10 +393,18 @@ def build_review_prompt(
         "versionados; essa ausência, sozinha, não constitui problema. "
         "Não corrija a grafia de caminhos literais sem comprovar uma divergência "
         "com outro caminho apresentado no inventário. "
+        "Use as relações calculadas localmente antes de concluir que um arquivo "
+        "não possui função. Ausência de referência não é prova isolada de desuso. "
+        "Antes de registrar uma ocorrência, procure no documento completo se a "
+        "distinção ou ressalva sugerida já foi declarada; nesse caso, não repita o "
+        "aviso. "
         "Aprove a escrita apenas com MEPA mínima de 11/14 e nenhum critério zero.\n\n"
         "<inventario_publico>\n"
         f"{inventory}\n"
         "</inventario_publico>\n\n"
+        "<relacoes_calculadas_localmente>\n"
+        f"{reference_context}\n"
+        "</relacoes_calculadas_localmente>\n\n"
         "<guia_mepa>\n"
         f"{guide}\n"
         "</guia_mepa>\n"

@@ -6,6 +6,8 @@ import sys
 from importlib import import_module
 from pathlib import Path
 
+sys.dont_write_bytecode = True
+
 
 def run() -> int:
     """Carrega o código do projeto e encaminha os argumentos da linha de comando."""

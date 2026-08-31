@@ -136,9 +136,13 @@ class ProjectGuardTests(unittest.TestCase):
             with patch("obw.project_guard.request.urlopen", fake_urlopen):
                 result = call_luna(
                     root,
-                    {"README.md": "# Projeto\n"},
+                    {"README.md": "# Projeto\n\nExecute scripts/luna.py.\n"},
                     "segredo",
-                    inventory_paths=[".githooks/pre-commit", "README.md"],
+                    inventory_paths=[
+                        ".githooks/pre-commit",
+                        "README.md",
+                        "scripts/luna.py",
+                    ],
                 )
 
         sent = json.loads(captured["request"].data.decode("utf-8"))
@@ -146,6 +150,8 @@ class ProjectGuardTests(unittest.TestCase):
         self.assertEqual(sent["model"], "gpt-5.6-luna")
         self.assertEqual(sent["text"]["format"]["type"], "json_schema")
         self.assertIn(".githooks/pre-commit", sent["input"])
+        self.assertIn("scripts/luna.py: função estrutural", sent["input"])
+        self.assertIn("referenciado por: README.md", sent["input"])
         self.assertNotIn("segredo", sent)
         self.assertEqual(result, self.review_result())
 
