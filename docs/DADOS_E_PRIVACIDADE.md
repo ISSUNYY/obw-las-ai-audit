@@ -1,33 +1,45 @@
 # Dados, privacidade e publicação
 
+O piloto começa com modelos sintéticos de reservatório. A publicação reúne
+somente texto, figuras originais e referências bibliográficas; não contém
+medições de campos, modelos proprietários ou arquivos de aquisição.
+
 ## Classificação dos materiais
 
-| Material | Classificação | Publicação |
-|---|---|---|
-| Código original | Público | Permitida sob MIT |
-| Documentação original | Pública | Permitida |
-| Esquemas e regras genéricas | Públicos | Permitida |
-| Fixtures LAS sintéticas | Públicas | Permitida |
-| LAS reais | Privados/restritos | Proibida sem autorização |
-| Coordenadas e identificadores | Sensíveis | Proibida por padrão |
-| Dissertações e artigos | Terceiros | Apenas referência bibliográfica |
-| Tokens e chaves | Secretos | Sempre proibida |
-| Saídas derivadas de dados reais | Restritas | Revisão antes da publicação |
+| Material | Condição de publicação |
+|---|---|
+| Manuscrito, protocolo e figuras originais | Publicáveis sob a licença do repositório |
+| Simulações sintéticas originais | Publicáveis após conferência de origem e conteúdo |
+| Dados, modelos e respostas de campos reais | Restritos; exigem autorização específica |
+| Coordenadas, identificadores e metadados de aquisição | Não publicar sem autorização |
+| Dissertações, livros, artigos e imagens de terceiros | Referenciar; redistribuição exige licença ou permissão |
+| Resultados derivados de dados restritos | Mantêm a restrição até revisão e autorização |
+| Chaves, tokens e configurações pessoais | Não publicar |
 
-## Revisão antes de publicar
+## Proveniência e acesso
 
-Todo artefato derivado deve ser verificado quanto a:
+Registrar a origem, a licença, as transformações, as unidades e a relação entre
+cada observação e seu modelo. Dados reais e documentos de referência serão
+mantidos como somente leitura. Cópias de trabalho, simulações e figuras terão
+destino distinto dos materiais de referência.
 
-- nomes e identificadores de poços;
-- coordenadas;
-- caminhos pessoais;
-- metadados de aquisição;
-- segredos e tokens;
-- conteúdo protegido de terceiros;
-- possibilidade de reidentificação por combinação de atributos.
+Hashes e registros de proveniência poderão apoiar a auditoria local. O registro
+público não deverá expor nomes de arquivos restritos, identificadores, caminhos
+pessoais ou outras informações que permitam reidentificação.
 
-## Uso de serviços externos
+O gráfico de repetibilidade no manuscrito foi redesenhado a partir de valores
+publicados, com indicação da fonte. Os PDFs das obras citadas não fazem parte
+da publicação. A licença MIT do projeto aplica-se aos materiais originais e não
+altera os direitos das obras de terceiros.
 
-O fluxo principal será local. Serviços externos somente poderão receber dados
-sintéticos, anonimizados ou formalmente autorizados.
+## Revisão de publicação e serviços externos
 
+Antes de publicar dados ou resultados, conferir conteúdo e metadados quanto a
+identificadores de campo, coordenadas, caminhos pessoais, credenciais, direitos
+de terceiros e possibilidades de reidentificação.
+
+Dados reais, coordenadas e identificadores não serão enviados a serviços
+externos. O treinamento e os cálculos serão realizados em ambiente controlado.
+Consultas bibliográficas poderão utilizar fontes públicas, sem incluir dados
+restritos. Respostas geradas por IA deverão apontar evidências verificáveis;
+sem evidência suficiente, a conclusão ficará em aberto.

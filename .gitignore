@@ -1,31 +1,57 @@
-# Dados e referências privadas ou de terceiros
+# Dados e obras de referência mantidos apenas no ambiente local
 Documentos de Referêcia/
+Documentos de Referência/
 2016-MSC-FERNANDO VIZEU SANTOS.pdf
+data/
+dados/
+inputs/
 *.las
 *.LAS
-data/raw/
-data/private/
-data/interim/
-
-# Saídas e artefatos locais
-outputs/**
-!outputs/.gitkeep
-tmp/
-artifacts/
-models/
+*.sgy
+*.segy
 *.parquet
 *.arrow
 *.feather
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.mat
 
-# Credenciais e configuração local
+# Publicar apenas o PDF original selecionado para o manuscrito
+*.pdf
+!artigo/piloto-artigo-cientifico.pdf
+*.docx
+*.pptx
+
+# Saídas, rascunhos e temporários
+outputs/
+tmp/
+artifacts/
+models/
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+
+# Instruções e configurações locais de agentes
+AGENTS.md
+**/AGENTS.md
+.agents/
+.codex/
+.claude/
+.githooks/
+.aiignore
+
+# Credenciais e configurações pessoais
 .env
 .env.*
-!.env.example
 *token*
 *secret*
 credentials.json
 
-# Python
+# Ambientes, caches e arquivos do sistema
 __pycache__/
 *.py[cod]
 *.egg-info/
@@ -38,8 +64,6 @@ htmlcov/
 venv/
 dist/
 build/
-
-# Editores e sistema operacional
 .idea/
 .vscode/
 .DS_Store

@@ -1,10 +1,6 @@
 * text=auto
+.gitattributes text eol=lf
+.gitignore text eol=lf
 *.md text eol=lf
-*.cff text eol=lf
-*.toml text eol=lf
-*.py text eol=lf
-*.json text eol=lf
-*.yml text eol=lf
-*.yaml text eol=lf
-*.las text eol=crlf
-.githooks/* text eol=lf
+*.tex text eol=lf
+*.pdf binary

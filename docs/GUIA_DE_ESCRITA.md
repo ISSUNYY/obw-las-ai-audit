@@ -14,14 +14,16 @@ e da apresentação honesta das limitações.
 
 Os textos devem:
 
-- começar pelo problema de perfis de poço;
+- começar pelo problema de Engenharia de Petróleo investigado, como previsão do
+  avanço de água ou monitoramento de reservatórios;
 - explicar o motivo de cada decisão antes de detalhar a tecnologia;
 - usar frases diretas e vocabulário compreensível para um estudante de Engenharia de
   Petróleo;
 - introduzir termos técnicos somente quando forem necessários;
 - separar o que já foi observado do que ainda será testado;
 - reconhecer dúvidas e limitações sem tentar escondê-las;
-- apresentar a inteligência artificial como uma ferramenta de apoio.
+- apresentar a inteligência artificial pela função científica que será avaliada,
+  inclusive quando ela constituir uma componente central do método.
 
 Em documentação acadêmica, usar preferencialmente construções como "este trabalho",
 "o projeto" e "será avaliado". O uso de "vamos" é aceitável em notas de planejamento,
@@ -36,8 +38,8 @@ e não recebe zero em nenhum critério.
 ### 1. Relação com o problema de Engenharia de Petróleo
 
 - 0: o texto poderia pertencer a qualquer projeto de software ou IA.
-- 1: menciona LAS ou perfis de poço, mas sem explicar a relação.
-- 2: deixa claro qual problema dos dados de poço está sendo tratado.
+- 1: menciona dados ou propriedades de reservatórios, mas sem explicar a relação com o problema.
+- 2: deixa claro qual problema de dados, interpretação ou monitoramento de reservatórios está sendo tratado.
 
 ### 2. Clareza para o leitor
 
@@ -55,7 +57,8 @@ e não recebe zero em nenhum critério.
 
 - 0: a IA aparece como solução central antes da definição do problema.
 - 1: a IA está contextualizada, mas ocupa espaço maior que sua função.
-- 2: a IA é apresentada somente como apoio à etapa em que será avaliada.
+- 2: a função da IA é proporcional ao método proposto e está ligada a uma hipótese
+  e a uma comparação verificável.
 
 ### 5. Naturalidade e voz do autor
 
@@ -74,7 +77,7 @@ e não recebe zero em nenhum critério.
 
 - 0: o tom não corresponde ao documento ou ao público.
 - 1: o tom é aceitável, mas poderia ser mais bem ajustado.
-- 2: README, relatório, issue, comentário e texto do TCC têm o nível de formalidade
+- 2: README, relatório, issue, comentário e manuscrito têm o nível de formalidade
   adequado à sua função.
 
 ## Exemplo de avaliação
@@ -99,7 +102,6 @@ uma função concreta no texto:
 - pipeline local, rastreável e robusto;
 - arquitetura híbrida;
 - solução inteligente;
-- fluxo agentivo;
 - modelo de última geração;
 - escalável e eficiente;
 - revolucionário ou inovador;

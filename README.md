@@ -1,113 +1,59 @@
-# Conversão e controle de qualidade de arquivos LAS
+# Piloto de artigo científico
 
-Projeto de TCC de **Davi Farias Dias**, estudante de Engenharia de Exploração e
-Produção de Petróleo na Universidade Estadual do Norte Fluminense Darcy Ribeiro
-(UENF).
+**Integração de sísmica 4D e aprendizado profundo no ajuste de histórico de reservatórios**
 
-> Situação atual: **Marco Zero** — definição do problema, organização dos dados e
-> planejamento dos critérios de avaliação.
+Previsão do avanço de água e análise de incerteza
 
-## Contexto
+**Autor:** Davi Farias Dias · Universidade Estadual do Norte Fluminense Darcy Ribeiro (UENF)
 
-Arquivos LAS são usados para armazenar perfis de poço e informações importantes
-sobre a aquisição. Embora sejam arquivos de texto, sua leitura exige alguns cuidados.
-Um mesmo poço pode apresentar curvas repetidas, intervalos sem dados, unidades
-diferentes e mais de uma corrida de perfilagem.
+Diferentes distribuições de permeabilidade podem explicar os dados dos poços e,
+ainda assim, prever avanços de água distintos no reservatório. Esta pesquisa propõe
+avaliar se a sísmica 4D reduz essa ambiguidade e se um modelo de aprendizado profundo
+permite incorporar essa informação ao ajuste de histórico com menor custo
+computacional e incerteza bem caracterizada.
 
-Este projeto busca organizar essa leitura e verificar a qualidade dos dados antes de
-qualquer interpretação. A primeira entrega será um programa capaz de converter LAS
-para JSON sem perder a relação entre profundidades, curvas, unidades e valores nulos.
+## Leitura do projeto
 
-Um modelo de linguagem executado localmente será avaliado em uma etapa posterior.
-Sua função será ajudar na redação do diagnóstico, usando somente resultados já
-calculados pelo programa. Ele não será usado para corrigir dados nem para tomar uma
-decisão geológica sozinho.
+- [Manuscrito em PDF](artigo/piloto-artigo-cientifico.pdf)
+- [Fonte LaTeX do manuscrito](artigo/piloto-artigo-cientifico.tex)
+- [Protocolo da pesquisa e estado atual](docs/PROTOCOLO_PESQUISA.md)
 
-## Pergunta do trabalho
+O manuscrito desenvolve o problema, as hipóteses, a fundamentação, as equações e os
+experimentos propostos. É um piloto de artigo científico em fase de proposta;
+não apresenta resultados experimentais próprios nem constitui artigo publicado
+em periódico. O simulador, a rede e o ajuste ainda não foram implementados neste
+repositório.
 
-É possível automatizar a conversão e a análise inicial de qualidade de arquivos LAS,
-mantendo os resultados verificáveis e reduzindo o risco de conclusões sem apoio nos
-dados?
+## Recorte científico
 
-## O que será feito no piloto
+O estudo utilizará um reservatório sintético bidimensional óleo–água. Um simulador
+físico fornecerá a referência de pressão, saturação e produção; um operador
+petroelástico produzirá as observações sísmicas. A rede aprenderá a aproximar o
+escoamento para auxiliar o ajuste dos modelos de permeabilidade. As previsões
+principais serão verificadas no simulador físico.
 
-- leitura de arquivos LAS 2.0 com e sem quebra de linha por profundidade;
-- preservação dos cabeçalhos, nomes de curvas, unidades e valores originais;
-- conversão para um formato JSON documentado;
-- identificação de curvas repetidas e de seus intervalos válidos;
-- cálculo de cobertura, lacunas e inconsistências;
-- elaboração de arquivos sintéticos para testar situações conhecidas;
-- avaliação de um modelo local na produção de um diagnóstico escrito;
-- conferência automática dos números e das curvas mencionados pelo modelo.
+As comparações separarão o benefício da informação sísmica do efeito da aproximação
+aprendida. A avaliação examinará previsões futuras, avanço e produção de água,
+incerteza e custo total. As hipóteses físicas, os critérios e as limitações estão
+no [protocolo](docs/PROTOCOLO_PESQUISA.md); as referências científicas completas
+estão no manuscrito.
 
-O piloto não tem como objetivo classificar todas as fácies. Essa possibilidade será
-estudada somente depois da validação da leitura e da qualidade dos dados.
+## Organização e publicação
 
-## Etapas previstas
+`artigo/` reúne o PDF e sua fonte textual. `docs/` reúne o protocolo, as regras de
+[dados e privacidade](docs/DADOS_E_PRIVACIDADE.md), o
+[guia de escrita](docs/GUIA_DE_ESCRITA.md) e a
+[identificação acadêmica](docs/IDENTIFICACAO_ACADEMICA.md).
 
-1. Definir o formato JSON e os critérios de aceitação.
-2. Criar arquivos LAS sintéticos para os testes.
-3. Implementar e conferir a conversão.
-4. Definir as regras de controle de qualidade.
-5. Produzir um resumo dos resultados para análise local.
-6. Avaliar o modelo de linguagem e medir respostas sem sustentação.
-7. Decidir, com base nos resultados, se o trabalho pode avançar para eletrofácies.
+O PDF foi exportado de um documento editável e revisado visualmente. A fonte
+LaTeX contém o mesmo conteúdo, com equações e figuras no próprio arquivo; sua
+compilação ainda não foi confirmada. Dados privados, documentos de terceiros,
+saídas de trabalho e configurações de agentes ficam fora da publicação.
 
-## Dados
+Os materiais originais deste repositório mantêm a [licença MIT](LICENSE).
+As obras citadas conservam seus próprios direitos e não são redistribuídas aqui.
 
-Este repositório **não distribui os arquivos LAS, a dissertação consultada, catálogos
-derivados ou outros documentos de terceiros**. Esses materiais permanecem fora do
-controle de versão por razões de confidencialidade, licença e integridade científica.
-
-Os testes públicos utilizarão apenas arquivos LAS sintéticos e pequenos, criados
-especificamente para o projeto.
-
-## Organização
-
-```text
-src/obw/             código-fonte
-scripts/luna.py      entrada do fiscal da Luna
-tests/               testes automatizados do fiscal já implementados
-tests/fixtures/      dados sintéticos versionáveis
-schemas/             contratos JSON versionados
-config/              configurações públicas e não sensíveis
-docs/                protocolo, decisões e documentação acadêmica
-outputs/             resultados locais não versionados
-tmp/                 arquivos temporários descartáveis
-```
-
-Os testes do conversor, incluindo equivalência e casos adversariais, serão
-acrescentados quando essas etapas forem implementadas.
-
-## Documentação do projeto
-
-A pergunta de pesquisa, hipóteses, métricas e portões de decisão estão descritos em
-[docs/PROTOCOLO_PESQUISA.md](docs/PROTOCOLO_PESQUISA.md).
-
-As decisões do Marco Zero estão registradas em
-[docs/DECISOES_MARCO_ZERO.md](docs/DECISOES_MARCO_ZERO.md).
-
-O padrão de escrita adotado no repositório está em
-[docs/GUIA_DE_ESCRITA.md](docs/GUIA_DE_ESCRITA.md).
-
-## Referência metodológica principal
-
-SANTOS, Fernando Vizeu. *Uso de algoritmos de classificação para determinação de
-eletrofácies em poços da Bacia de Campos*. 2016. Dissertação (Mestrado em Engenharia
-de Reservatório e de Exploração) — Universidade Estadual do Norte Fluminense Darcy
-Ribeiro, Macaé, 2016.
-
-## Reprodutibilidade
-
-O projeto registrará as versões do formato JSON, do programa, das regras de
-qualidade e do modelo avaliado. Entradas privadas serão identificadas internamente
-por hash SHA-256, sem publicar nomes, coordenadas ou conteúdo dos arquivos.
-
-## Como citar
-
-Os metadados de citação estão disponíveis em [CITATION.cff](CITATION.cff).
-
-## Licença
-
-O código original deste repositório é disponibilizado sob a licença MIT. Dados,
-documentos e materiais de terceiros não são cobertos por essa licença.
+Para citar esta proposta: DIAS, Davi Farias. *Integração de sísmica 4D e aprendizado
+profundo no ajuste de histórico de reservatórios: previsão do avanço de água e
+análise de incerteza*. Piloto de artigo científico. UENF, 2026.
+[Repositório](https://github.com/ISSUNYY/piloto-artigo-cientifico).

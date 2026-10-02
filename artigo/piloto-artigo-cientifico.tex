@@ -1,0 +1,293 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage[left=3cm,right=2cm,top=3cm,bottom=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{newtxtext,newtxmath}
+\usepackage{graphicx,tabularx,array}
+\usepackage{tikz,pgfplots}
+\usetikzlibrary{arrows.meta}
+\pgfplotsset{compat=1.18}
+\usepackage[hidelinks,breaklinks]{hyperref}
+\usepackage{microtype}
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\bfseries\normalsize}{}{0pt}{}
+\titleformat{\subsection}{\normalfont\bfseries\normalsize}{}{0pt}{}
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt}{6pt}
+\usepackage{fancyhdr}
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{6pt}
+\setlength{\emergencystretch}{2em}
+\pagestyle{fancy}\fancyhf{}\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt}\renewcommand{\footrulewidth}{0pt}
+\setlength{\headheight}{0pt}
+\hypersetup{pdftitle={Integração de sísmica 4D e aprendizado profundo no ajuste de histórico de reservatórios},pdfauthor={Davi Farias Dias}}
+\begin{document}
+{\noindent\bfseries\fontsize{16}{19}\selectfont Integração de sísmica 4D e aprendizado profundo no ajuste de histórico de reservatórios\par}
+\begin{center}\large\itshape Previsão do avanço de água e análise de incerteza\end{center}
+Davi Farias Dias\par
+Universidade Estadual do Norte Fluminense Darcy Ribeiro\par
+Engenharia de Exploração e Produção de Petróleo\par
+\section*{Resumo}
+O acompanhamento do avanço de água em reservatórios requer modelos capazes de explicar as observações disponíveis e prever estados ainda não observados. Diferentes distribuições de permeabilidade podem reproduzir dados dos poços e produzir previsões distintas entre eles. A sísmica 4D acrescenta informação espacial, mas sua integração ao ajuste de histórico exige modelagem física, tratamento de incerteza e numerosas avaliações do simulador. Esta proposta investiga o uso de aprendizado profundo como modelo substituto do escoamento para viabilizar essa integração em um reservatório bidimensional óleo--água. A rede será treinada com simulações verificadas e estimará campos de pressão e saturação, a partir dos quais operadores físicos calcularão respostas de poços e diferenças sísmicas. Serão comparados ajustes com dados dos poços, com poços e sísmica 4D, e com a mesma informação integrada usando o modelo substituto. A avaliação reservará um período futuro e modelos geológicos independentes para verificar avanço de água, produção de água, confiabilidade dos intervalos e custo computacional total. A hipótese é que a informação sísmica possa melhorar as previsões e que a aproximação aprendida possa reduzir o custo preservando qualidade compatível com a referência física. O estudo examinará situações de ruído, resolução limitada e discrepância da física de rochas. A contribuição pretendida é demonstrar em quais condições a integração agrega informação útil à engenharia de reservatórios e em quais condições o erro da aproximação compromete esse benefício. O piloto apresenta escopo, hipóteses e método; não contém resultados de treinamento ou validação em campo.\par
+Palavras-chave: sísmica 4D; ajuste de histórico; aprendizado profundo; avanço de água; engenharia de reservatórios; incerteza.\par
+Piloto de artigo científico --- proposta de pesquisa --- outubro de 2026.\par
+
+\newpage
+\section*{1 Introdução e finalidade da pesquisa}
+A injeção de água modifica a distribuição dos fluidos e a pressão de um reservatório. Seu acompanhamento exige compreender por onde a água se desloca, quais regiões permanecem pouco varridas e como essas mudanças afetam os poços produtores. Medições de vazão e pressão informam o comportamento nas posições dos poços, mas não determinam de forma única as propriedades e os estados no espaço entre eles. Um modelo que reproduz o histórico disponível ainda pode prever incorretamente a chegada de água ou a evolução da produção.\par
+O ajuste de histórico consiste em modificar propriedades incertas de um modelo para aproximar suas respostas das observações de produção e monitoramento. A finalidade é obter modelos compatíveis com os dados, preservando hipóteses físicas e geológicas. O conjunto ajustado deve ser usado para avaliar previsões e sua dispersão. Ajustar bem o período observado, isoladamente, não demonstra capacidade de previsão.\par
+A sísmica 4D compara levantamentos realizados em momentos diferentes sobre a mesma região. Mudanças de pressão e saturação alteram propriedades elásticas do sistema rocha--fluido e podem modificar a resposta sísmica. A saturação de água é a fração do volume poroso ocupada por água. A observação sísmica não mede essa fração diretamente: sua interpretação depende da física de rochas, da banda do sinal, da resolução e da repetibilidade entre aquisições.\par
+A proposta utiliza essa informação como restrição adicional ao modelo de reservatório. O benefício pretendido é verificar se os modelos ajustados com sísmica representam melhor o deslocamento de água e produzem previsões futuras mais confiáveis do que os ajustados apenas com dados dos poços. O resultado terá interesse para monitoramento e atualização de modelos; a aplicação operacional dependerá de validação com dados de campo.\par
+A integração exige avaliar diversas distribuições possíveis de propriedades e simular sua evolução. Xiao et al. (2022) examinam o uso de redes neurais como aproximações para reduzir o custo desse problema. Neste piloto, o aprendizado profundo terá a função de aproximar o escoamento durante o ajuste, enquanto a adequação física e o efeito nas previsões serão verificados no simulador de referência.\par
+O projeto reúne escoamento em meios porosos, resposta sísmica, inferência de propriedades e aprendizado de máquina. Sua pergunta será avaliada por comparações que separam o benefício da informação sísmica do benefício computacional da rede. A aplicação inicial será controlada e bidimensional, para permitir diagnóstico dos mecanismos e dos erros antes de ampliar a complexidade.\par
+
+\newpage
+\section*{2 Fundamentação e pesquisas recentes}
+Nóbrega, Moraes e Emerick (2018) integraram produção e sísmica 4D no ajuste de um reservatório carbonático da Bacia de Campos. O estudo examinou dados sísmicos de baixa repetibilidade e a seleção de regiões interpretadas. Essa aplicação sustenta a importância de controlar a qualidade da informação assimilada. Seu contexto carbonático não valida automaticamente a formulação óleo--água simplificada deste piloto.\par
+Xiao et al. (2022) investigaram redes neurais no ajuste sísmico de histórico, com atenção ao custo e à otimização. Wang e Durlofsky (2025) integraram modelos substitutos de aprendizado profundo a observações de poços e saturação interpretada da sísmica 4D em um caso sintético de armazenamento de CO\textsubscript{2}. A pesquisa fundamenta a integração entre fontes com resoluções diferentes; o domínio CO\textsubscript{2} e suas conclusões não serão transferidos diretamente para um reservatório óleo--água.\par
+Lew, MacBeth e Côrte (2026) aplicaram aprendizado profundo à inversão de mudanças de pressão e saturação em dados da Bacia Malaia. O trabalho evidencia a influência do ruído e da informação espacial. A Figura 1 apresenta valores publicados de repetibilidade, usados aqui para contextualizar a qualidade de observação. Não representa desempenho deste projeto.\par
+\noindent\textbf{\small Figura 1 --- NRMS médio publicado para três conjuntos de ângulos}\par
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=14.8cm,height=5.0cm,ybar,bar width=24pt,ymin=0,ymax=40,
+ytick={0,10,20,30,40},ylabel={NRMS médio (\%)},symbolic x coords={Próximos,Intermediários,Afastados},
+xtick=data,nodes near coords={\pgfmathprintnumber\pgfplotspointmeta\%},
+every node near coord/.append style={font=\small},tick label style={font=\small},
+axis lines=left,ymajorgrids=true,grid style={gray!20},enlarge x limits=0.25]
+\addplot[fill=gray!65,draw=gray!65] coordinates {(Próximos,31) (Intermediários,29) (Afastados,32)};
+\end{axis}\end{tikzpicture}\end{center}{\noindent\small Fonte: elaboração a partir de Lew, MacBeth e Côrte (2026), seção 2. Valores publicados de campo: 31\%, 29\% e 32\%.\par}
+A diferença quadrática normalizada entre traços, ou NRMS, auxilia o diagnóstico de repetibilidade. Esses valores não constituem limites universais de qualidade. Luo, Lorentzen e Bhakta (2021) investigam erros da física de rochas no ajuste 4D. A proposta examinará erro observacional, discrepância física e erro do modelo substituto como fontes distintas, evitando atribuir todos os resíduos às propriedades do reservatório.\par
+
+\newpage
+\section*{3 Pergunta de pesquisa e hipóteses}
+A pergunta central será: em quais condições a integração de sísmica 4D ao ajuste de histórico melhora a previsão do avanço de água, e o aprendizado profundo reduz o custo desse ajuste preservando confiabilidade compatível com a simulação física de referência?\par
+O objetivo geral será desenvolver e avaliar um procedimento de ajuste assistido por modelo substituto, medindo o efeito da informação sísmica e da aproximação aprendida sobre estados e previsões do reservatório. Os objetivos específicos serão verificar o gerador físico; representar a incerteza geológica; treinar o modelo substituto; integrar as observações; e avaliar modelos ajustados em dados independentes.\par
+\subsection*{3.1 Hipóteses verificáveis}
+H1: a inclusão de sísmica 4D informativa reduz erros ou melhora a confiabilidade das previsões do avanço de água em relação ao uso exclusivo de dados dos poços. A hipótese não será sustentada se o ganho desaparecer em realizações independentes, decorrer de informações extras indevidas ou vier acompanhado de intervalos excessivamente confiantes.\par
+H2: o modelo substituto permite reduzir o custo total do ajuste integrado, com degradação de qualidade inferior a uma tolerância fixada antes do teste. Serão contabilizados geração dos exemplos, treinamento, ajuste e verificações no simulador. A hipótese não será sustentada por ganho de velocidade de uma previsão isolada nem por comparações com recursos computacionais diferentes.\par
+H3: incluir consistência física no treinamento e representar o erro da aproximação melhora a estabilidade do ajuste diante de desvios locais. A hipótese será examinada por retirada dessas componentes. Mudanças de estrutura física também serão testadas para identificar limites; não se presume que a regularização resolva qualquer discrepância.\par
+\subsection*{3.2 Delimitação inicial}
+O núcleo será um reservatório horizontal bidimensional, de espessura conhecida, contendo óleo e água, sem gás livre. A distribuição de permeabilidade será o alvo geológico ajustável; porosidade, geometria, poços e curvas de permeabilidade relativa terão valores conhecidos no ensaio de referência. O modelo começará com fluxo incompressível, pressão comum às fases e efeitos capilares e gravitacionais desprezíveis. Sua pressão responderá às mobilidades e aos controles; não representará armazenamento compressível ou geomecânica completa.\par
+As conclusões serão restritas ao domínio representado. Carbonatos, fluxo composicional, falhas complexas e otimização de controles de poços exigiriam estudos próprios. O título do piloto não implica que toda a distribuição geológica possa ser recuperada de forma única.\par
+
+\newpage
+\section*{4 Metodologia e desenho da integração}
+A pesquisa será aplicada, quantitativa e experimental. A revisão bibliográfica será de escopo, orientada ao ajuste de histórico com sísmica 4D, modelos substitutos e avaliação de incerteza. Artigos revisados por pares, livros e documentação científica serão identificados por DOI ou repositório. O registro de busca distinguirá texto consultado, resumo e metadados; a revisão não será apresentada como levantamento sistemático exaustivo.\par
+O método começará com um simulador de referência verificado. Realizações geológicas fornecerão exemplos para treinamento e casos independentes. Em cada caso reservado, o modelo verdadeiro produzirá observações sintéticas perturbadas, mantendo ocultas as propriedades ajustáveis. O procedimento de ajuste terá acesso somente às observações do período de calibração e à informação prévia comum aos métodos.\par
+\noindent\textbf{\small Figura 2 --- Integração proposta entre observações e modelo de reservatório}\par
+\begin{center}\begin{tikzpicture}[node distance=1.05cm,
+block/.style={draw,align=center,text width=4.2cm,minimum height=1.15cm,font=\small},
+arr/.style={-{Latex[length=2mm]},thick}]
+\node[block] (well) at (-4.7,0) {\textbf{Dados dos poços}\\Produção e pressão};
+\node[block] (seis) at (4.7,0) {\textbf{Sísmica 4D}\\Referência e monitoramento};
+\node[block] (hm) at (0,-2.0) {\textbf{Ajuste de histórico}\\IA aproxima a simulação\\Física calcula as observações};
+\node[block] (models) at (0,-4.05) {\textbf{Modelos ajustados}\\Verificação no simulador físico};
+\node[block] (future) at (4.7,-4.05) {\textbf{Previsão reservada}\\Avanço de água e produção};
+\draw[arr] (well.south) |- (hm.west);\draw[arr] (seis.south) |- (hm.east);
+\draw[arr] (hm.south)--(models.north);\draw[arr] (models.east)--(future.west);
+\end{tikzpicture}\end{center}{\noindent\small Fonte: desenho metodológico proposto. Diagrama conceitual, sem resultados experimentais.\par}
+O aprendizado profundo aproximará campos de pressão e saturação. Operadores físicos transformarão esses campos em respostas de poços e diferenças sísmicas. O ajuste modificará os parâmetros geológicos e avaliará quais modelos permanecem compatíveis com as observações. Modelos selecionados serão novamente executados no simulador de referência para verificar o efeito da aproximação.\par
+Um intervalo posterior ao último dado assimilado será reservado para previsão. Observações futuras não serão usadas para escolher rede, pesos, número de atualizações ou limiares. A utilidade será demonstrada no comportamento previsto pelo reservatório físico, com repetição em diferentes realizações verdadeiras.\par
+
+\newpage
+\section*{5 Modelo de escoamento e verificação física}
+Para cada fase \(\alpha\), a conservação de volume no núcleo incompressível relacionará acumulação, fluxo e fontes. A porosidade \(\phi\) será fixa no tempo; \(S_{\alpha}\) será a saturação; \(u_{\alpha}\), a velocidade de Darcy; e \(q_{\alpha}\), a fonte volumétrica por volume de meio poroso. O uso de unidades coerentes será verificado, conforme os fundamentos de simulação apresentados por Lie (2019).\par
+
+\begin{equation}
+\phi\frac{\partial S_\alpha}{\partial t}+\nabla\cdot\mathbf u_\alpha=q_\alpha,\qquad S_w+S_o=1
+\end{equation}
+A lei de Darcy utilizará o tensor de permeabilidade K e a mobilidade \(\lambda_{\alpha}\), definida pela permeabilidade relativa \(k_{r\alpha}\) e pela viscosidade \(\mu_{\alpha}\). Com gravidade e capilaridade omitidas, as duas fases terão a mesma pressão p.\par
+
+\begin{equation}
+\mathbf u_\alpha=-\mathbf K\lambda_\alpha\nabla p,\qquad \lambda_\alpha=\frac{k_{r\alpha}}{\mu_\alpha}
+\end{equation}
+A soma das equações das fases fornecerá o problema de pressão; a conservação de água fornecerá o transporte. \(\lambda_{t}\) será a mobilidade total, \(u_{t}\) o fluxo total e \(f_{w}\) a fração de fluxo de água. A razão de mobilidades não será confundida com a fração volumétrica de água em qualquer posição.\par
+
+\begin{equation}
+-\nabla\cdot(\mathbf K\lambda_t\nabla p)=q_t,\qquad f_w=\frac{\lambda_w}{\lambda_w+\lambda_o}
+\end{equation}
+
+\begin{equation}
+\phi\frac{\partial S_w}{\partial t}+\nabla\cdot(f_w\mathbf u_t)=q_w
+\end{equation}
+As curvas de permeabilidade relativa serão representadas por uma relação do tipo Corey com parâmetros fixos no ensaio de referência. A saturação efetiva \(S_{e}\) terá limites estabelecidos por água conata \(S_{wc}\) e óleo residual \(S_{or}\). Os expoentes e os valores de extremidade serão explicitados na configuração; não serão escolhidos retrospectivamente para favorecer a rede.\par
+
+\begin{equation}
+S_e=\frac{S_w-S_{wc}}{1-S_{wc}-S_{or}},\qquad k_{rw}=k_{rw,0}S_e^{n_w},\quad k_{ro}=k_{ro,0}(1-S_e)^{n_o}
+\end{equation}
+A discretização inicial usará volumes finitos em malha cartesiana e mobilidades a montante. Serão verificados conservação global, limites de saturação, balanço entre injeção e produção e estabilidade por refinamento de malha e passo. As condições laterais serão de fluxo nulo; os controles dos poços e a condição inicial deverão ser compatíveis com o balanço. O campo sintético de referência não será considerado uma representação calibrada de um campo real.\par
+
+\newpage
+\section*{6 Propriedades geológicas e observações dos poços}
+A permeabilidade incerta será representada por um campo positivo de baixa dimensionalidade. Uma base espacial fixa limitará o número de parâmetros a ajustar, preservando continuidade geológica. A função \(\mu_{K}\) e as funções \(b_{j}\) definirão a informação prévia; os coeficientes \(a_{j}\) comporão o vetor m. \(K_{ref}\) será uma permeabilidade de referência que torna o logaritmo adimensional.\par
+
+\begin{equation}
+\log\!\left(\frac{K(\mathbf x)}{K_{\mathrm{ref}}}\right)=\mu_K(\mathbf x)+\sum_{j=1}^{r}a_jb_j(\mathbf x),\qquad \mathbf m=(a_1,\ldots,a_r)
+\end{equation}
+O tensor poderá ser diagonal, com uma razão de anisotropia fixa. K(x) na equação 6 representará a componente principal. A primeira base terá oito componentes espaciais, como configuração inicial sujeita à verificação de sensibilidade. Sua dimensão final será definida por estabilidade do ajuste. Recuperar um campo suavizado não comprovará recuperação de toda a heterogeneidade; modelos verdadeiros com componentes ausentes da base serão usados para examinar esse limite.\par
+O caso inicial terá um injetor com vazão prescrita e um produtor com pressão de fundo prescrita, em posições fixas. O simulador aplicará os controles com resposta calculada por uma relação de produtividade consistente com sua discretização. Quando a vazão for prescrita, ela será controle conhecido; a pressão correspondente poderá ser observação. Quando a pressão for prescrita, as vazões calculadas poderão ser observações. Uma variável imposta como condição de operação não será reapresentada como evidência independente sobre a permeabilidade.\par
+As séries assimiladas poderão incluir pressão de fundo, vazão de óleo e água ou fração de água produzida, conforme o controle adotado. A fração de água no produtor será calculada pelas vazões de fase nas condições de volume declaradas. Sua comparação exigirá a mesma convenção de referência nos dados e no modelo.\par
+
+\begin{equation}
+f_{w,\mathrm{prod}}=\frac{Q_w}{Q_w+Q_o}
+\end{equation}
+A chegada de água será definida por um limiar operacional de fração produzida, fixado antes do teste. Se a chegada não ocorrer na janela de previsão, o resultado será tratado como censurado, sem atribuir artificialmente o instante final. A posição da frente no domínio será descrita por contornos de mudança de saturação. O limiar do contorno será uma definição do experimento e terá sua sensibilidade avaliada.\par
+A evolução futura manterá os mesmos controles prescritos para todos os métodos. Esses controles serão conhecidos como cenário de previsão; as respostas futuras permanecerão ocultas. A avaliação examinará erro de estado, localização do avanço e séries de produção, distinguindo ajuste histórico de previsão independente.\par
+
+\newpage
+\section*{7 Física de rochas e ligação com a sísmica 4D}
+Cada célula horizontal representará uma coluna com camada reservatório de espessura conhecida e camadas encaixantes fixas. Os campos de escoamento serão transferidos para a escala de observação por um operador espacial explícito. O primeiro ensaio usará propriedades médias na espessura. Essa construção não representa propagação sísmica tridimensional completa nem resolve estruturas abaixo da resolução do sinal.\par
+Para óleo e água em mistura homogênea, o módulo volumétrico do fluido \(K_{f}\) será calculado por média harmônica. A densidade \(\rho_{f}\) será calculada pela média volumétrica. As propriedades dos fluidos serão constantes no núcleo incompressível; uma extensão dependente de pressão exigirá PVT e mudança consistente do escoamento.\par
+
+\begin{equation}
+\frac{1}{K_f}=\frac{S_w}{K_w}+\frac{1-S_w}{K_o},\qquad \rho_f=S_w\rho_w+(1-S_w)\rho_o
+\end{equation}
+A variação de pressão de poros será ligada à rigidez por uma relação fenomenológica com tensão efetiva, sob tensão confinante constante. Os expoentes da lei de potência serão parâmetros declarados do modelo, não constantes universais ou um modelo completo de contato dos grãos. A pressão efetiva deverá permanecer positiva.\par
+
+\begin{equation}
+p_{\mathrm{eff}}=\sigma_c-\alpha p,\qquad K_{\mathrm{dry}}=K_{\mathrm{dry},0}\left(\frac{p_{\mathrm{eff}}}{p_{\mathrm{eff},0}}\right)^{a_K}
+\end{equation}
+A substituição de fluidos seguirá Gassmann (1951), com meio isotrópico, poros conectados, equilíbrio de pressão e baixa frequência. \(K_{m}\) será o módulo mineral e \(K_{dry}\) o módulo seco. O módulo cisalhante saturado será igual ao seco no mesmo estado de tensão efetiva; sua dependência de pressão poderá seguir lei análoga à da equação 9.\par
+
+\begin{equation}
+K_{\mathrm{sat}}=K_{\mathrm{dry}}+\frac{(1-K_{\mathrm{dry}}/K_m)^2}{\phi/K_f+(1-\phi)/K_m-K_{\mathrm{dry}}/K_m^2},\qquad G_{\mathrm{sat}}=G_{\mathrm{dry}}
+\end{equation}
+
+\begin{equation}
+\rho_{\mathrm{sat}}=(1-\phi)\rho_m+\phi\rho_f,\quad V_P=\sqrt{\frac{K_{\mathrm{sat}}+4G_{\mathrm{sat}}/3}{\rho_{\mathrm{sat}}}},\quad V_S=\sqrt{\frac{G_{\mathrm{sat}}}{\rho_{\mathrm{sat}}}}
+\end{equation}
+Essas relações produzirão as propriedades elásticas usadas na resposta sísmica. Avseth, Mukerji e Mavko (2005) e Bosch, Mukerji e González (2010) orientam a interpretação quantitativa e seus limites. Diferentes combinações de pressão e saturação poderão produzir respostas semelhantes; essa ambiguidade será examinada no ajuste, sem presumir uma correspondência única.\par
+
+\newpage
+\section*{8 Operador de observação e qualidade dos dados}
+A refletividade entre camadas será calculada, inicialmente, pela aproximação de dois termos de Shuey (1985). A será a refletividade de incidência normal e B o gradiente com o ângulo \(\theta\). As barras indicarão médias entre os dois lados da interface; \(\Delta\) nesta equação representará contraste espacial, distinto da diferença temporal 4D.\par
+
+\begin{equation}
+R(\theta)\approx A+B\sin^2\theta,\qquad A=\frac12\left(\frac{\Delta V_P}{\overline V_P}+\frac{\Delta\rho}{\overline\rho}\right)
+\end{equation}
+
+\begin{equation}
+B=\frac12\frac{\Delta V_P}{\overline V_P}-2\left(\frac{\overline V_S}{\overline V_P}\right)^2\left(\frac{\Delta\rho}{\overline\rho}+2\frac{\Delta V_S}{\overline V_S}\right)
+\end{equation}
+A aproximação será usada somente em contrastes e ângulos compatíveis, com confronto a casos de incidência normal e, quando necessário, às equações de Zoeppritz. A resposta de referência e a de monitoramento serão calculadas separadamente. A convolução com a forma de onda w e o operador espacial \(H_{s}\) representarão banda e resolução. O tempo \(\tau\) será o tempo de propagação do sinal; t será o tempo de evolução do reservatório.\par
+
+\begin{equation}
+\mathbf d_s(t)=H_s[w*R(t)],\qquad \Delta\mathbf d_s(t)=\mathbf d_s(t)-\mathbf d_s(0)
+\end{equation}
+A informação assimilada será uma diferença sísmica ou um conjunto de atributos extraídos por uma regra fixa. Saturação interpretada não será tratada como medição direta perfeita. Se for utilizada uma inversão anterior, suas hipóteses e incertezas precisarão entrar no operador de observação; os mesmos dados não serão contados novamente como evidência independente.\par
+O vetor de observações combinará respostas de poços e sísmica, com respectivas escalas e covariâncias. F será o simulador físico e H o conjunto de operadores. O erro \(\varepsilon\) representará aquisição; b representará discrepância física. A compatibilidade dimensional será estabelecida pelo branqueamento com a covariância, não por somar resíduos em MPa, vazão e amplitude sem normalização.\par
+
+\begin{equation}
+\mathbf d=G(\mathbf m)+\mathbf b(\mathbf m)+\boldsymbol\varepsilon,\qquad G=H\circ F
+\end{equation}
+A diferença entre levantamentos compartilha o erro da referência. Por isso, os erros de diferentes monitores podem ser correlacionados. O piloto começará com covariância conhecida e avançará para correlações declaradas e estimadas somente com informação permitida. Mudanças de forma de onda, resolução e calibração física serão controladas separadamente do ruído aleatório.\par
+
+\newpage
+\section*{9 Aprendizado profundo como modelo substituto}
+A rede receberá a distribuição de propriedades do modelo, o estado inicial, a geometria conhecida, os controles dos poços e os instantes de avaliação. Produzirá uma sequência de campos de pressão e saturação. Durante o ajuste, cada candidato m será convertido em propriedades e submetido à rede. A saída será transformada pelos operadores físicos em observações comparáveis aos dados.\par
+
+\begin{equation}
+F_\psi(\mathbf K,\phi,\mathbf z_0,\mathbf c,t)=(\widehat p_t,\widehat S_{w,t}),\qquad G_\psi=H\circ F_\psi
+\end{equation}
+\(\psi\) será o conjunto de pesos aprendidos e c a sequência de controles conhecidos. O modelo substituto será treinado com respostas do simulador verificado. Sua função será aproximar o cálculo repetido do escoamento. A assimilação continuará modificando parâmetros geológicos; a rede não terá acesso às propriedades verdadeiras do caso reservado.\par
+A arquitetura inicial combinará operações convolucionais para relações espaciais e uma componente recorrente para evolução temporal, com decodificação dos campos. Uma rede de menor porte sobre parâmetros e saídas reduzidas será referência de complexidade. A escolha entre elas dependerá de validação e custo. Operadores neurais ou arquiteturas maiores não serão incluídos somente por atualidade.\par
+A pressão será normalizada por uma escala fixa e a saturação por seus limites admissíveis. A saída de saturação poderá usar uma transformação limitada ao intervalo físico. Essa restrição não garante conservação de massa. A pressão prescrita nos poços, os controles e a consistência entre etapas temporais serão examinados por verificações próprias.\par
+O conjunto de treinamento abrangerá a distribuição prévia e uma faixa declarada de propriedades. Serão reservadas realizações para validação, calibração de erro e teste. Todos os tempos, ruídos e variações derivados da mesma realização permanecerão na mesma partição. Transformações e escolha de hiperparâmetros usarão somente os conjuntos autorizados.\par
+A previsão será avaliada em sequências completas, inclusive após o último instante assimilado. Treinar a rede com respostas futuras de realizações independentes permitirá aprender a dinâmica; utilizar respostas futuras do caso verdadeiro reservado contaminaria o teste. Essa distinção será mantida nos identificadores e nas funções de acesso aos dados.\par
+Wang e Durlofsky (2025) demonstram uma aplicação de modelos substitutos específicos para observações de escalas distintas. O presente piloto manterá uma aproximação do escoamento com observação física explícita. Sua capacidade de representar estados e sua utilidade no ajuste serão avaliadas separadamente.\par
+
+\newpage
+\section*{10 Treinamento físico e erro da aproximação}
+O treinamento supervisionado comparará campos previstos e simulados em escalas normalizadas. N representará o conjunto de pontos espaciais e temporais usados na perda. \(s_{p}\) e \(s_{S}\) serão escalas determinadas no treinamento, comuns às variantes comparadas. Pressão e saturação terão erros apresentados também em suas unidades físicas.\par
+
+\begin{equation}
+L_{\mathrm{dados}}=\frac1N\sum_{i=1}^N\left[\left(\frac{\widehat p_i-p_i}{s_p}\right)^2+\left(\frac{\widehat S_{w,i}-S_{w,i}}{s_S}\right)^2\right]
+\end{equation}
+A orientação física acrescentará resíduos discretos de conservação e condições conhecidas. \(R_{w}\) será a acumulação de água mais divergência dos fluxos menos fontes, calculada com as saídas previstas e as mesmas propriedades e controles informados à rede. \(R_{p}\) será o resíduo do problema de pressão. As escalas dos resíduos serão fixadas para impedir que unidades determinem seus pesos.\par
+
+\begin{equation}
+R_w=\phi\frac{\widehat S_w^{n+1}-\widehat S_w^n}{\Delta t}+\nabla_h\cdot\left[f_w(\widehat S_w)\widehat{\mathbf u}_t\right]-q_w
+\end{equation}
+
+\begin{equation}
+L_{\mathrm{total}}=L_{\mathrm{dados}}+\lambda_wL_{R_w}+\lambda_pL_{R_p}+\lambda_{bc}L_{bc}
+\end{equation}
+Os pesos serão escolhidos na validação. Uma variante com todos os pesos físicos nulos permitirá medir seu efeito. A penalização física será uma regularização a testar, sem afirmar que a rede resolve exatamente as equações ou que conserva massa em qualquer entrada. Um resíduo pequeno também poderá ocorrer com um modelo físico inadequado ao caso.\par
+O erro do substituto será estimado em realizações independentes por comparação entre \(G_{\psi}\) e G. Sua média poderá orientar correção de viés; sua covariância poderá compor o erro do ajuste, sob hipótese explícita de independência do erro observacional. As estimativas de erro serão reavaliadas quando o ajuste levar os candidatos a regiões pouco representadas. A dispersão entre redes não substituirá a comparação com o simulador.\par
+
+\begin{equation}
+\mathbf C_e=\mathbf C_{\mathrm{obs}}+\mathbf C_{\mathrm{sub}}
+\end{equation}
+A soma da equação 20 pressupõe fontes independentes e erro substituto adequadamente caracterizado. Correlações e dependência com m poderão exigir tratamento condicional. A discrepância da física de rochas será examinada à parte, conforme a questão discutida por Luo, Lorentzen e Bhakta (2021). Absorvê-la indiscriminadamente em uma variância ampla pode reduzir a informação assimilada sem corrigir a interpretação.\par
+
+\newpage
+\section*{11 Ajuste de histórico e verificação dos modelos}
+A interpretação probabilística combinará informação prévia e compatibilidade com as observações. O vetor m conterá coeficientes da permeabilidade; a priori definirá valores e correlações admissíveis. Sob erro Gaussiano com covariância fixa, o resíduo normalizado determinará a verossimilhança. Parâmetros incertos da física de rochas poderão ser tratados como auxiliares, evitando fixá-los implicitamente como se fossem conhecidos.\par
+
+\begin{equation}
+p(\mathbf m\mid\mathbf d)\propto p(\mathbf d\mid\mathbf m)p(\mathbf m),\qquad J_d=\frac12[\mathbf d-G(\mathbf m)]^T\mathbf C_e^{-1}[\mathbf d-G(\mathbf m)]
+\end{equation}
+O algoritmo inicial será o suavizador de conjuntos com múltiplas assimilações, ES-MDA, de Emerick e Reynolds (2013). O procedimento utiliza relações estatísticas entre parâmetros e respostas em um conjunto de modelos. Essa escolha é compatível com o uso em ajuste 4D examinado por Nóbrega, Moraes e Emerick (2018). O conjunto obtido será uma aproximação de incerteza cuja qualidade precisará ser avaliada.\par
+
+\begin{equation}
+\mathbf m_j^{\ell+1}=\mathbf m_j^\ell+\mathbf C_{md}^\ell(\mathbf C_{dd}^\ell+\alpha_\ell\mathbf C_e)^{-1}[\mathbf d+\boldsymbol\varepsilon_j^\ell-G(\mathbf m_j^\ell)]
+\end{equation}
+\(C_{md}\) e \(C_{dd}\) serão covariâncias amostrais entre parâmetros e respostas e das respostas. As perturbações \(\varepsilon_{j}\) terão covariância \(\alpha\)\_ℓ\(C_{e}\). Os fatores de inflação deverão satisfazer a soma de seus inversos igual a um. O número de atualizações e o tamanho do conjunto serão escolhidos por estabilidade em casos de validação, com a mesma informação e política nos métodos comparados.\par
+
+\begin{equation}
+\sum_{\ell=1}^{N_a}\frac{1}{\alpha_\ell}=1
+\end{equation}
+As transformações dos parâmetros preservarão permeabilidade positiva e limites definidos pela informação prévia. Com baixa dimensionalidade, a primeira formulação poderá dispensar localização espacial; limitações amostrais serão examinadas antes de ampliar o campo ajustável. A redução artificial da dispersão não será interpretada automaticamente como aumento de conhecimento.\par
+No ajuste assistido, G será aproximado por \(G_{\psi}\), com tratamento do erro descrito na seção anterior. Uma amostra representativa do conjunto inicial, intermediário e final será executada no simulador físico. Se a aproximação alterar a compatibilidade dos candidatos ou os estados futuros, a divergência será registrada e poderá exigir novas simulações de treinamento. Nenhum ganho será sustentado apenas pelas saídas da própria rede.\par
+As previsões principais serão produzidas pelo simulador físico a partir dos conjuntos ajustados. Essa etapa permitirá avaliar a qualidade dos parâmetros obtidos e distinguir erro do ajuste de erro de previsão da rede. Moraes e Scales (2000) fundamentam a atenção à informação prévia e aos parâmetros auxiliares na inferência geofísica.\par
+
+\newpage
+\section*{12 Experimentos e critérios de avaliação}
+Os casos verdadeiros terão propriedades ocultas e observações sintéticas com ruído conhecido. A comparação principal reutilizará as mesmas realizações, conjuntos iniciais e controles. Cada observação sísmica adicional terá uma data e uma covariância comuns aos métodos integrados. Serão separados o benefício da informação e o efeito da aproximação.\par
+\noindent\textbf{\small Quadro 1 --- Comparações que isolam as contribuições}\par
+\begin{center}\small\renewcommand{\arraystretch}{1.2}\begin{tabularx}{\linewidth}{|p{1.2cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}\hline
+\textbf{Caso} & \textbf{Método e observações} & \textbf{O que será medido}\\\hline
+A & Simulador físico; dados dos poços. & Referência de ajuste e previsão.\\\hline
+B & Simulador físico; poços e sísmica 4D. & Benefício da informação sísmica em relação a A.\\\hline
+C & Modelo substituto; poços e a mesma sísmica 4D. & Qualidade e custo em relação a B.\\\hline
+C\textsubscript{0} & Mesmo substituto sem penalização física. & Efeito da orientação física em relação a C.\\\hline
+\end{tabularx}\end{center}
+{\noindent\small Fonte: desenho experimental proposto. Conjuntos ajustados serão verificados no simulador físico.\par}
+Os cenários incluirão ruído crescente, correlação entre monitores, resolução espacial reduzida e física de rochas discrepante. Haverá casos compatíveis com a base geológica e casos com heterogeneidades não representadas. A arquitetura e os pesos serão definidos antes do teste reservado. Não se buscará uma configuração diferente para cada caso verdadeiro após conhecer sua resposta.\par
+Avaliar-se-ão pressão em MPa, saturação em fração, séries de produção e contornos do avanço de água. O erro de estado será medido sobre espaço e tempo. A chegada de água no produtor será avaliada somente quando observável na janela; casos sem chegada serão contabilizados separadamente. O erro de produção acumulada será distinguido do erro instantâneo.\par
+
+\begin{equation}
+\mathrm{RMSE}_S=\sqrt{\frac1N\sum_{i=1}^N(\widehat S_{w,i}-S_{w,i})^2},\qquad E_{Q_w}=\frac{|Q_{w,\mathrm{acum}}^{\mathrm{pred}}-Q_{w,\mathrm{acum}}^{\mathrm{verd}}|}{Q_{w,\mathrm{acum}}^{\mathrm{verd}}}
+\end{equation}
+Na equação 24, o denominador do erro acumulado será o valor verdadeiro, com regra específica para valores nulos. O cálculo será feito em convenção volumétrica comum. Cobertura e largura dos intervalos serão avaliadas em múltiplos casos independentes; um intervalo amplo não será considerado útil apenas por cobrir a verdade. A dispersão de um único conjunto não demonstra calibração estatística.\par
+As diferenças entre casos serão pareadas por realização e acompanhadas de intervalos obtidos por reamostragem de casos completos. Tolerâncias de degradação e critérios de decisão serão fixados com validação antes do teste. Um ajuste sísmico melhor acompanhado de previsão futura pior será relatado como falha da integração.\par
+
+\newpage
+\section*{13 Desenvolvimento e contribuição científica}
+Python organizará os dados e experimentos. NumPy e SciPy apoiarão cálculo numérico e estatística; PyTorch implementará o modelo substituto e a diferenciação das perdas; Pandas registrará os experimentos; e Matplotlib produzirá figuras científicas. O simulador de referência será baseado no MRST, desenvolvido em MATLAB pelo SINTEF, com troca de arquivos de dados de estrutura documentada. Essa escolha preserva a separação entre uma ferramenta científica de escoamento e os componentes de aprendizado.\par
+O MRST possui documentação aberta de escoamento, discretização e solução numérica, conforme Lie (2019). A disponibilidade de MATLAB e a execução do caso serão verificadas antes de fixar o ambiente. Compatibilidade com GNU Octave não será presumida para qualquer módulo. Versões, dependências, configurações, unidades e sementes serão registradas.\par
+A organização computacional separará geração física, operadores de observação, aprendizado, assimilação e avaliação. Testes verificarão balanço de massa, limites de saturação, consistência de unidades, diferença sísmica nula para estados idênticos e preservação das partições. Não haverá acesso a valores ocultos do teste durante ajuste ou seleção. Dados privados permanecerão locais; exemplos públicos serão sintéticos ou terão autorização verificada.\par
+O custo compreenderá simulações de treinamento, treinamento das redes, ajustes e verificações físicas. Será apresentado em condições de hardware declaradas, com comparação para um caso e para vários casos, distinguindo custo inicial de reutilização. Aceleração será hipótese a testar; não será prometida a partir do número de parâmetros ou da escolha de uma arquitetura.\par
+A contribuição de engenharia será avaliar se a informação 4D melhora a representação e a previsão do avanço de água. A contribuição de aprendizado será caracterizar o compromisso entre custo, erro de aproximação e confiabilidade do ajuste. A investigação poderá mostrar benefício, ausência de ganho ou degradação, desde que explique os mecanismos com evidências independentes.\par
+A novidade não será atribuída ao uso de redes ou ao ajuste de histórico, que já possuem literatura. O recorte específico combinará observação sísmica com resolução declarada, aprendizado orientado pela conservação e previsão física reservada em óleo--água. Sua originalidade deverá ser situada pela revisão e pela comparação com referências próximas. O resultado reproduzível poderá apoiar novas pesquisas em monitoramento e atualização de modelos de reservatório.\par
+A transferência para campo exigirá calibração petroelástica, informações de fluido, observações compatíveis e autorização de uso. O núcleo incompressível não representa todos os mecanismos de pressão, e a geometria simplificada limita a descrição sísmica. As conclusões da pesquisa deverão declarar esse alcance e apresentar os casos em que a integração falhou, preservando a finalidade científica da proposta.\par
+
+\newpage
+\section*{Referências}
+\noindent AVSETH, Per; MUKERJI, Tapan; MAVKO, Gary. Quantitative seismic interpretation: applying rock physics tools to reduce interpretation risk. Cambridge: Cambridge University Press, 2005. DOI: \href{https://doi.org/10.1017/CBO9780511600074}{10.1017/CBO9780511600074}.\par
+\noindent BOSCH, Miguel; MUKERJI, Tapan; GONZÁLEZ, Ezequiel F. Seismic inversion for reservoir properties combining statistical rock physics and geostatistics: a review. Geophysics, v. 75, n. 5, p. 75A165--75A176, 2010. DOI: \href{https://doi.org/10.1190/1.3478209}{10.1190/1.3478209}.\par
+\noindent EMERICK, Alexandre A.; REYNOLDS, Albert C. Ensemble smoother with multiple data assimilation. Computers \& Geosciences, v. 55, p. 3--15, 2013. DOI: \href{https://doi.org/10.1016/j.cageo.2012.03.011}{10.1016/j.cageo.2012.03.011}.\par
+\noindent GASSMANN, Fritz. Über die Elastizität poröser Medien. Vierteljahrsschrift der Naturforschenden Gesellschaft in Zürich, v. 96, p. 1--23, 1951.\par
+\noindent LEW, Chean Lin; MACBETH, Colin; CÔRTE, Gustavo. 4D seismic inversion to changes in pressure and saturation using deep learning. Geophysical Prospecting, v. 74, n. 4, e70195, 2026. DOI: \href{https://doi.org/10.1111/1365-2478.70195}{10.1111/1365-2478.70195}.\par
+\noindent LIE, Knut-Andreas. An introduction to reservoir simulation using MATLAB/GNU Octave: user guide for the MATLAB reservoir simulation toolbox (MRST). Cambridge: Cambridge University Press, 2019. DOI: \href{https://doi.org/10.1017/9781108591416}{10.1017/9781108591416}.\par
+\noindent LUO, Xiaodong; LORENTZEN, Rolf J.; BHAKTA, Tuhin. Accounting for model errors of rock physics models in 4D seismic history matching problems: a perspective of machine learning. Journal of Petroleum Science and Engineering, v. 196, 107961, 2021. DOI: \href{https://doi.org/10.1016/j.petrol.2020.107961}{10.1016/j.petrol.2020.107961}.\par
+\noindent MORAES, Fernando S.; SCALES, John A. Local Bayesian inversion: theoretical developments. Geophysical Journal International, v. 141, n. 3, p. 713--723, 2000. DOI: \href{https://doi.org/10.1046/j.1365-246x.2000.00110.x}{10.1046/j.1365-246x.2000.00110.x}.\par
+\noindent NÓBREGA, Diego Vale da; MORAES, Fernando Sérgio de; EMERICK, Alexandre A. Data assimilation of a legacy 4D seismic in a brown field. Journal of Geophysics and Engineering, v. 15, n. 6, p. 2585--2601, 2018. DOI: \href{https://doi.org/10.1088/1742-2140/aadd68}{10.1088/1742-2140/aadd68}.\par
+\noindent SHUEY, R. T. A simplification of the Zoeppritz equations. Geophysics, v. 50, n. 4, p. 609--614, 1985. DOI: \href{https://doi.org/10.1190/1.1441936}{10.1190/1.1441936}.\par
+\noindent WANG, Nanzhe; DURLOFSKY, Louis J. Deep learning framework for history matching CO\textsubscript{2} storage with 4D seismic and monitoring well data. Geoenergy Science and Engineering, v. 248, 213736, 2025. DOI: \href{https://doi.org/10.1016/j.geoen.2025.213736}{10.1016/j.geoen.2025.213736}.\par
+\noindent XIAO, Cong; LIN, Hai-Xiang; LEEUWENBURGH, Olwijn; HEEMINK, Arnold. Surrogate-assisted inversion for large-scale history matching: comparative study between projection-based reduced-order modeling and deep neural network. Journal of Petroleum Science and Engineering, v. 208, 109287, 2022. DOI: \href{https://doi.org/10.1016/j.petrol.2021.109287}{10.1016/j.petrol.2021.109287}.\par
+
+\end{document}

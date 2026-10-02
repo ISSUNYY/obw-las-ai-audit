@@ -1,265 +1,207 @@
-# Protocolo e estado atual da pesquisa
+# Protocolo da pesquisa
 
-Última revisão: 31 de agosto de 2026.
+## Função e estado atual
 
-## Função deste documento
+Este documento concentra o escopo, as decisões metodológicas, as métricas, os
+critérios de avaliação e o estado da pesquisa. O manuscrito apresenta essa proposta
+em formato acadêmico; este protocolo registra suas condições de execução e revisão.
 
-Este é o documento diretor do projeto. Ele reúne o estado atual, a pergunta de
-pesquisa, a relação com a dissertação de Fernando Vizeu Santos, o modelo conceitual
-dos dados, as formas de avaliação e a sequência de trabalho.
+**Tema:** integração de sísmica 4D e aprendizado profundo no ajuste de histórico de
+reservatórios, com previsão do avanço de água e análise de incerteza.
 
-O README apresenta somente uma visão geral. Regras permanentes de privacidade,
-escrita, identificação acadêmica e decisões do Marco Zero permanecem nos documentos
-específicos já existentes. Quando houver mudança de etapa, este protocolo deverá ser
-atualizado em vez de ser criado um novo arquivo de plano ou situação do projeto.
+**Natureza:** piloto de artigo científico em fase de proposta. Existem um
+[manuscrito em PDF](../artigo/piloto-artigo-cientifico.pdf) e uma
+[fonte LaTeX](../artigo/piloto-artigo-cientifico.tex). Não houve implementação do
+simulador, treinamento da rede, ajuste de histórico ou obtenção de resultados
+experimentais próprios. O texto não declara publicação, aprovação editorial ou
+originalidade já demonstrada.
 
-## Estado atual
+O PDF foi exportado de um documento editável. Suas 15 páginas foram conferidas
+visualmente. A fonte LaTeX é autossuficiente quanto ao conteúdo: inclui as 24
+equações, o quadro de comparação, as duas figuras e as 12 referências. A compilação
+LaTeX não foi confirmada por indisponibilidade do compilador utilizado. O PDF
+disponibilizado não foi gerado por compilação dessa fonte.
 
-O projeto permanece no Marco Zero. A organização pública, as regras de privacidade e
-o escopo inicial estão definidos, mas ainda não existem o contrato JSON, o arquivo
-LAS sintético de referência, o conversor ou os testes de equivalência.
+## Problema, pergunta e contribuição
 
-A análise dos materiais locais mostrou que o catálogo JSON legado e os programas
-`main*.py` ajudam a reconstruir como os dados foram selecionados na dissertação. Eles
-serão tratados como referências históricas, não como código do novo sistema.
+Dados de produção e pressão dos poços não determinam uma única distribuição de
+permeabilidade. Modelos que reproduzem o histórico podem prever avanços de água
+distintos entre os poços. A sísmica 4D fornece informação espacial complementar,
+mas depende de física de rochas, resolução, repetibilidade e tratamento de erro.
+Sua assimilação também pode exigir muitas avaliações do simulador de escoamento.
 
-As evidências dessa reconstrução permanecem nos materiais locais de referência, que
-não podem ser publicados nem enviados à revisão externa. Antes da versão científica,
-cada afirmação derivada desses materiais deverá ser confirmada por uma citação pública
-da dissertação ou apresentada explicitamente como hipótese de reprodução.
+A pesquisa investigará em quais condições a integração sísmica melhora as
+previsões e se uma aproximação aprendida reduz o custo total do ajuste preservando
+qualidade compatível com a referência física. O benefício pretendido é produzir
+previsões de avanço e produção de água mais bem sustentadas pelas observações,
+com limites de confiança explícitos. Uma rede treinada, isoladamente, não será
+considerada contribuição científica suficiente.
 
-A próxima entrega é a definição do contrato conceitual dos dados e de um caso
-sintético mínimo. Nenhuma etapa de classificação ou uso de modelo de linguagem deve
-começar antes da validação da conversão.
+Serão avaliadas três hipóteses:
 
-## Problema de Engenharia de Petróleo
+- a informação sísmica melhora a previsão futura em relação ao uso exclusivo de
+  observações dos poços;
+- o modelo substituto reduz o custo total com degradação de qualidade inferior a
+  uma tolerância definida previamente;
+- a penalização física e o tratamento do erro substituto melhoram a consistência
+  das respostas e a caracterização da incerteza.
 
-Arquivos LAS podem conter curvas repetidas, diferentes nomes para o mesmo tipo de
-perfil, intervalos sem dados, unidades ausentes, profundidades irregulares e mais de
-uma aquisição no mesmo poço. Uma conversão que não preserve essas condições pode
-alterar silenciosamente o conjunto usado em análises posteriores.
+Resultados desfavoráveis também serão reportados. Redução do erro de ajuste,
+isoladamente, não demonstra melhoria da previsão.
 
-O primeiro problema do trabalho é verificar se o conteúdo relevante do LAS pode ser
-representado de forma estruturada sem perda da relação entre profundidade, curva,
-unidade, valor ausente e origem da aquisição.
+## Modelo de reservatório e observações
 
-## Pergunta principal
+O caso de referência será bidimensional horizontal, óleo–água, sem gás livre,
+com fluxo incompressível, pressão comum e espessura conhecida. Gravidade e
+capilaridade serão omitidas. Porosidade, geometria e curvas de permeabilidade
+relativa serão fixadas no ensaio de referência.
 
-É possível converter arquivos LAS para uma representação estruturada e produzir um
-diagnóstico inicial de qualidade mantendo cada resultado ligado a informações
-verificáveis do arquivo original?
+A permeabilidade positiva será parametrizada por uma base espacial com oito
+coeficientes como configuração inicial, sujeita à análise de sensibilidade.
+A razão de anisotropia será fixa. Heterogeneidades ausentes dessa base serão
+incluídas em casos de teste para examinar o limite da representação.
 
-Uma etapa posterior avaliará se um modelo de linguagem local consegue explicar esse
-diagnóstico sem introduzir afirmações que não estejam nos resultados calculados.
+O caso inicial combinará injetor de vazão prescrita e produtor de pressão
+prescrita. Variáveis impostas são controles, não observações independentes
+da permeabilidade. Observações dos poços incluirão somente respostas calculadas
+ou medidas que não tenham sido impostas como condição de operação.
 
-## Hipóteses de trabalho
+O escoamento utilizará conservação de volume, lei de Darcy, mobilidades e
+transporte de saturação, com curvas do tipo Corey. O simulador de referência
+será baseado no MRST. A disponibilidade do ambiente MATLAB e a compatibilidade
+dos módulos serão verificadas antes da execução.
 
-1. Um conversor determinístico consegue preservar estrutura, valores e proveniência
-   do LAS em um contrato versionado.
-2. Regras explícitas de qualidade conseguem identificar problemas conhecidos em
-   arquivos sintéticos sem depender de interpretação por modelo de linguagem.
-3. Um modelo local pode auxiliar na redação do diagnóstico quando recebe somente um
-   conjunto limitado de resultados e quando cada afirmação é verificada.
+A resposta sísmica será calculada por mistura de fluidos, tensão efetiva,
+relação fenomenológica para os módulos secos, Gassmann, velocidades, aproximação
+de Shuey, convolução e resolução espacial explícita. Cada célula horizontal
+representará uma coluna de espessura fixa com encaixantes conhecidas.
 
-## Relação com a dissertação de Fernando Vizeu Santos
+Essa formulação não representa propagação tridimensional completa, armazenamento
+compressível ou geomecânica. A sensibilidade petroelástica à pressão não elimina
+essas limitações do modelo de escoamento. A transferência para campo exigirá
+calibração, dados compatíveis e autorização de uso.
 
-A dissertação estudou a classificação de eletrofácies a partir de perfis de poço da
-bacia de Campos. Foram avaliados o número de poços usados no treinamento, os perfis
-selecionados, a padronização, a redução de dimensionalidade, diferentes algoritmos e
-o agrupamento de fácies que não podiam ser distinguidas adequadamente pelos perfis.
+## Função do aprendizado profundo e ajuste
 
-Os materiais locais indicam o seguinte fluxo operacional:
+O modelo substituto receberá propriedades do reservatório, estado inicial,
+controles e tempos. Estimará campos de pressão e saturação; operadores físicos
+converterão esses campos em respostas dos poços e diferenças sísmicas.
 
-```text
-catálogo JSON legado
-        ↓
-identificação do LAS e dos mnemônicos de cada aquisição
-        ↓
-leitura dos valores diretamente no LAS
-        ↓
-seleção das amostras consideradas válidas
-        ↓
-formação da matriz de perfis e da classe litológica
-        ↓
-padronização, treinamento, validação e comparação
-```
+A arquitetura inicial combinará convoluções e recorrência temporal, comparada
+a uma referência de menor porte. A orientação física será uma penalização dos
+resíduos discretos de conservação e pressão. Sua contribuição será avaliada
+pela retirada dessa penalização. Não se presumirá solução exata das equações
+pela rede.
 
-O catálogo legado não é uma conversão completa do LAS. Ele associa arquivos e
-aquisições aos mnemônicos usados pelos programas e também armazena algumas
-estatísticas derivadas. Os valores numéricos dos perfis continuam sendo lidos nos
-arquivos LAS.
+O ajuste inicial será realizado por ES-MDA, um método de atualização de conjuntos
+de modelos com assimilação múltipla dos dados. Informação prévia e tratamento
+das observações serão comuns às comparações. A covariância do erro substituto
+será estimada fora do teste. Sua soma à covariância observacional dependerá de
+uma hipótese explícita de independência; discrepância da física de rochas será
+examinada separadamente.
 
-Os cinco papéis de curva encontrados no fluxo legado são caliper (`CALI`), raios
-gama (`GR`), densidade (`RHOB`), porosidade neutrônica (`NPHI`) e sônico (`DT`). A
-classificação descrita na dissertação utiliza `GR`, `RHOB`, `NPHI` e `DT`. O caliper
-não é uma variável de classificação, embora o código legado o inclua na regra que
-descarta amostras com valores ausentes. Essa diferença deverá ser reproduzível e
-também testada como uma regra alternativa.
+Os conjuntos inicial, intermediário e final terão verificações no simulador
+de referência. As previsões principais serão calculadas nesse simulador a
+partir dos modelos ajustados.
 
-Os programas antigos também retiram a profundidade ao formar a matriz de
-classificação. O novo projeto deverá preservar essa ligação, pois ela é necessária
-para localizar evidências, analisar continuidade vertical e devolver resultados à
-posição correta no poço.
+## Comparações e validação
 
-Outras decisões implícitas que precisam se tornar explícitas são:
+| Caso | Motor do ajuste | Observações | Comparação pretendida |
+|---|---|---|---|
+| A | Simulador físico | Poços | Referência sem informação sísmica |
+| B | Simulador físico | Poços e sísmica 4D | Benefício da informação em relação a A |
+| C | Modelo substituto | Mesmas observações de B | Efeito da aproximação e custo em relação a B |
+| C₀ | Substituto sem penalização física | Mesmas observações de B | Contribuição da penalização em relação a C |
 
-- quais aquisições pertencem a cada conjunto analítico;
-- como tratar aquisições sobrepostas;
-- quais curvas definem a validade de uma amostra;
-- como tratar uma litologia ausente ou desconhecida;
-- por que um poço ou intervalo foi incluído ou excluído;
-- quais transformações foram ajustadas apenas com dados de treinamento;
-- como manter separados os poços de treinamento e validação.
+Cada realização geológica, com todos os tempos e réplicas de ruído, ficará em
+uma única partição. Serão reservadas realizações independentes e um período
+posterior ao último dado assimilado. Respostas futuras do caso verdadeiro não
+entrarão no treinamento, na seleção de arquitetura ou na escolha de tolerâncias.
+Controles futuros serão cenários prescritos comuns a todos os métodos.
 
-O objetivo inicial não é reproduzir todas as classificações da dissertação. O estudo
-de Vizeu serve para definir quais informações precisam ser preservadas agora para que
-uma reprodução ou extensão futura seja possível.
+Os experimentos examinarão ruído crescente e correlacionado, resolução espacial
+limitada, discrepância da física de rochas e heterogeneidade não representada.
+As comparações serão pareadas por caso; a reamostragem estatística utilizará
+realizações completas, preservando sua dependência interna.
 
-## Modelo conceitual dos dados
+## Métricas e critérios de decisão
 
-O projeto trabalhará com três níveis relacionados, mas independentes.
+A avaliação medirá:
 
-### 1. Documento canônico do LAS
+- erros de pressão em MPa e de saturação em fração;
+- posição dos contornos do avanço de água;
+- vazão e produção acumulada de água;
+- tempo de chegada de água, com tratamento de casos censurados;
+- cobertura e largura dos intervalos de previsão;
+- custo total da geração de dados, treinamento, ajuste e verificações físicas.
 
-Representa o conteúdo lido sem decisão geológica ou classificação. Deve registrar:
+As fórmulas e os modelos estão desenvolvidos no manuscrito. Unidades, operadores,
+normalizações, limiares de chegada de água e tolerâncias serão fixados com dados
+de validação antes de consultar o teste reservado. A cobertura será avaliada
+junto à largura dos intervalos, pois intervalos arbitrariamente largos não
+demonstram uma previsão útil.
 
-- versão do contrato;
-- hash e proveniência do arquivo de origem;
-- versão do leitor;
-- seções e cabeçalhos originais;
-- índice de profundidade;
-- mnemônico, unidade e descrição originais de cada curva;
-- valores numéricos e valores ausentes;
-- ordem original das curvas;
-- ocorrências repetidas do mesmo mnemônico;
-- avisos produzidos durante a leitura.
+O ganho de informação será avaliado por B em relação a A; o efeito do substituto,
+por C em relação a B. A redução de custo somente será sustentada se incluir
+geração de dados, treinamento e verificações no simulador. O custo de um caso
+será distinguido do custo de reutilização em vários casos, com hardware declarado.
 
-Nomes, unidades e valores originais não serão substituídos. Uma designação comum,
-como `GR`, poderá ser acrescentada sem apagar o mnemônico recebido.
+## Base científica e proveniência
 
-### 2. Seleção analítica
+A bibliografia completa está no manuscrito. As referências abaixo sustentam
+decisões específicas do recorte:
 
-Registra como uma parte do documento canônico foi preparada para uma análise. Deve
-informar:
+- Nóbrega, Moraes e Emerick (2018),
+  [DOI 10.1088/1742-2140/aadd68](https://doi.org/10.1088/1742-2140/aadd68):
+  integração de produção e sísmica 4D em reservatório da Bacia de Campos.
+- Xiao et al. (2022),
+  [DOI 10.1016/j.petrol.2021.109287](https://doi.org/10.1016/j.petrol.2021.109287):
+  uso de modelos substitutos no ajuste de histórico. O estudo não constitui
+  validação de campo do modelo aqui proposto.
+- Wang e Durlofsky (2025),
+  [DOI 10.1016/j.geoen.2025.213736](https://doi.org/10.1016/j.geoen.2025.213736):
+  aprendizado profundo, observações de monitoramento e ajuste de armazenamento
+  de CO₂ em caso sintético. A aplicação não valida diretamente óleo–água.
+- Luo, Lorentzen e Bhakta (2021),
+  [DOI 10.1016/j.petrol.2020.107961](https://doi.org/10.1016/j.petrol.2020.107961):
+  aprendizado de discrepâncias do modelo físico no ajuste de histórico.
+- Emerick e Reynolds (2013),
+  [DOI 10.1016/j.cageo.2012.03.011](https://doi.org/10.1016/j.cageo.2012.03.011):
+  formulação do ES-MDA.
+- Lie (2019),
+  [DOI 10.1017/9781108591416](https://doi.org/10.1017/9781108591416):
+  fundamentos e implementação científica do MRST.
+- Lew, MacBeth e Côrte (2026),
+  [DOI 10.1111/1365-2478.70195](https://doi.org/10.1111/1365-2478.70195):
+  inversão 4D de pressão e saturação com aprendizado profundo. Os valores de
+  NRMS de 31%, 29% e 32% da primeira figura são dados publicados desse estudo,
+  redesenhados para contextualização; não são resultados do piloto nem limites
+  universais de qualidade.
 
-- referência ao documento de origem;
-- curvas selecionadas e motivo da seleção;
-- correspondência entre papel comum e mnemônico original;
-- intervalo ou aquisição utilizada;
-- regra de validade das amostras;
-- referências das profundidades incluídas e excluídas;
-- variável de resposta, quando houver;
-- contagens recalculadas para aquela seleção.
+As buscas foram dirigidas ao problema de ajuste, aprendizado profundo, sísmica
+4D e erro de modelo. Foram conferidos registros institucionais, metadados e
+trechos acessíveis das publicações. Não se declara revisão sistemática exaustiva.
+A segunda figura é um diagrama original do método proposto.
 
-As estatísticas derivadas não serão armazenadas como se fossem dados originais. Elas
-deverão indicar a regra e a versão do programa que as produziu.
+## Implementação, publicação e próxima investigação
 
-### 3. Registro do experimento
+Python será utilizado na organização dos experimentos e no aprendizado, com
+NumPy, SciPy, PyTorch, Pandas e Matplotlib. MATLAB/MRST será o ambiente do
+simulador de referência. Versões e dependências serão definidas e registradas
+quando o caso numérico for implementado; não há ambiente executável publicado
+nesta etapa.
 
-Documenta uma conversão, auditoria ou classificação realizada sobre uma seleção.
-Deve informar:
+Métricas serão calculadas numericamente, preservando unidades, sementes,
+configurações e proveniência. A organização dos dados deverá separar controles,
+estados simulados e observações, com identificação das realizações e partições.
+A publicação de dados obedecerá às regras de
+[privacidade](DADOS_E_PRIVACIDADE.md); a escrita e a identificação seguem seus
+[documentos](GUIA_DE_ESCRITA.md) [responsáveis](IDENTIFICACAO_ACADEMICA.md).
 
-- entradas e respectivas versões;
-- poços ou blocos usados em cada etapa;
-- transformações aplicadas;
-- parâmetros e versões dos métodos;
-- métricas calculadas;
-- resultados e limitações;
-- referências para as evidências que sustentam cada conclusão.
+A próxima investigação é verificar conservação e discretização no caso óleo–água
+e a consistência do operador sísmico antes de gerar a base de treinamento.
+Essa condição técnica não estabelece cronograma ou prazo de conclusão.
 
-Resultados produzidos por modelo de linguagem não poderão alterar o documento
-canônico nem substituir métricas calculadas.
-
-## Representação e eficiência
-
-O contrato conceitual não deve obrigar todo o sistema a carregar um único JSON muito
-grande na memória. A primeira versão usará JSON nos casos sintéticos porque ele é
-legível e adequado para conferir a equivalência. Antes de processar conjuntos
-maiores, serão comparadas representações que permitam leitura por partes, mantendo o
-mesmo significado e os mesmos vínculos de proveniência.
-
-Qualquer formato adicional será apenas uma representação física. O modelo conceitual
-e as regras de preservação continuarão sendo a referência.
-
-## Unidades de avaliação
-
-- arquivos LAS sintéticos com comportamento conhecido;
-- arquivos privados avaliados somente no ambiente local;
-- documentos canônicos produzidos pelo conversor;
-- resultados determinísticos do controle de qualidade;
-- respostas do modelo local, apenas quando os portões anteriores forem atendidos.
-
-## Métricas da conversão
-
-- preservação de curvas, ordem, unidades e metadados;
-- equivalência dos valores e das profundidades;
-- tratamento correto de nulos e arquivos com `WRAP=YES` ou `WRAP=NO`;
-- identificação de curvas e profundidades repetidas;
-- determinismo entre execuções;
-- tempo de execução e uso de memória.
-
-## Métricas do controle de qualidade
-
-- verdadeiros positivos;
-- falsos positivos;
-- falsos negativos;
-- concordância com o resultado esperado dos casos sintéticos;
-- concordância com revisão humana nos casos autorizados.
-
-## Métricas do modelo de linguagem
-
-- respostas válidas pelo esquema definido;
-- afirmações associadas a evidência existente;
-- números, curvas ou entidades sem correspondência nos resultados;
-- alertas relevantes omitidos;
-- consistência entre execuções;
-- abstinências corretas quando faltarem informações.
-
-## Sequência de trabalho
-
-1. Incorporar as correções documentais do Marco Zero.
-2. Definir a primeira versão do documento canônico do LAS.
-3. Criar um LAS sintético mínimo e escrever manualmente o resultado esperado.
-4. Definir testes de equivalência antes de implementar o leitor.
-5. Implementar e validar a conversão.
-6. Definir regras determinísticas de qualidade e seus casos sintéticos.
-7. Produzir um conjunto compacto de resultados para o diagnóstico escrito.
-8. Avaliar um modelo local e verificar automaticamente suas afirmações.
-9. Decidir se existem condições para estudar classificação de eletrofácies.
-
-## Próxima entrega
-
-A próxima alteração deverá definir, em `schemas/`, o contrato mínimo do documento
-canônico e criar, em `tests/fixtures/`, um único LAS sintético acompanhado de seu
-resultado esperado. O primeiro caso deve conter profundidade, quatro curvas, unidade,
-valor ausente e um mnemônico alternativo, sem qualquer dado real.
-
-## Portões de decisão
-
-1. O conversor não será aceito sem equivalência entre LAS e representação canônica.
-2. O controle de qualidade não avançará sem casos sintéticos com resultado conhecido.
-3. O modelo de linguagem só será integrado depois da validação dos cálculos.
-4. O relatório só será aceito quando cada afirmação puder ser conferida.
-5. A classificação só será estudada após definição das classes e validação por poço
-   ou bloco de profundidade.
-6. Métodos complexos só serão comparados depois de referências simples.
-
-## Limites atuais
-
-Não fazem parte da primeira entrega:
-
-- classificação completa de eletrofácies;
-- preenchimento automático de valores ausentes;
-- alteração dos LAS originais;
-- publicação de dados privados ou materiais de terceiros;
-- uso de coordenadas ou identificadores reais em testes públicos;
-- interpretação geológica autônoma por modelo de linguagem;
-- criação de interface gráfica antes da estabilização do núcleo.
-
-## Controle de atualização
-
-Antes de acrescentar documentação, deve-se procurar neste protocolo e nos documentos
-especializados uma seção com a mesma finalidade. A regra é atualizar a fonte já
-existente, retirar trechos superados e apontar para a seção responsável. Um novo
-documento só poderá ser criado quando possuir finalidade independente e após
-autorização explícita.
+Revisão editorial desta versão: MEPA 12/14, sem critério zero. A pontuação segue
+o guia de escrita: problema 2, clareza 2, precisão 2, proporção da IA 2,
+naturalidade 1, economia técnica 1 e adequação 2.
